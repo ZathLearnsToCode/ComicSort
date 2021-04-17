@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ComicSort</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Prism.DryIoc" Version="8.0.0.1909" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ComicSort.Core\ComicSort.Core.csproj" />
+    <ProjectReference Include="..\Modules\ComicSort.Modules.ModuleName\ComicSort.Modules.ModuleName.csproj" />
+    <ProjectReference Include="..\Services\ComicSort.Services.Interfaces\ComicSort.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\Services\ComicSort.Services\ComicSort.Services.csproj" />
+  </ItemGroup>
+</Project>
