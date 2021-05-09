@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.Domain", "ComicSo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.DataAccess", "ComicSort\ComicSort.DataAccess\ComicSort.DataAccess.csproj", "{DF446A7E-B618-47A8-AC2F-464AC1BF16F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.Modules.MenusModule", "ComicSort\Modules\ComicSort.Modules.MenusModule\ComicSort.Modules.MenusModule.csproj", "{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{DF446A7E-B618-47A8-AC2F-464AC1BF16F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF446A7E-B618-47A8-AC2F-464AC1BF16F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF446A7E-B618-47A8-AC2F-464AC1BF16F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +78,7 @@ Global
 		{5460BDFA-CE8E-47AA-8979-9FD622E7B4D5} = {64287A99-304C-48E4-995F-B14770F5A7EA}
 		{C76A41D0-113E-4B81-86DC-12BA9D221629} = {416678E8-AE08-479E-8B84-797218DA0CDE}
 		{D3575324-5F28-4119-98CD-DC11D4973DB6} = {416678E8-AE08-479E-8B84-797218DA0CDE}
+		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963} = {64287A99-304C-48E4-995F-B14770F5A7EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBC1A110-D821-464C-BF43-DA1843F8F19D}
