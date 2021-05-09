@@ -14,4 +14,7 @@
     <ProjectReference Include="..\Services\ComicSort.Services.Interfaces\ComicSort.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Services\ComicSort.Services\ComicSort.Services.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Styles\" />
+  </ItemGroup>
 </Project>
