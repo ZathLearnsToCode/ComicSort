@@ -4,8 +4,10 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:core="clr-namespace:ComicSort.Core;assembly=ComicSort.Core"
-        Title="{Binding Title}" WindowState="Maximized" >
-    <Grid>
+        Title="{Binding Title}" WindowState="Maximized"
+        Background="{StaticResource DarkBackgroundBrush}">
+    <DockPanel LastChildFill="True">
+        <ContentControl DockPanel.Dock="Top" prism:RegionManager.RegionName="{x:Static core:RegionNames.MenuRegion}"/>
         <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.ContentRegion}" />
-    </Grid>
+    </DockPanel>
 </Window>
