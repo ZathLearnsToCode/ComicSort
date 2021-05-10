@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComicSort.Core\ComicSort.Core.csproj" />
+    <ProjectReference Include="..\Modules\ComicSort.Modules.MenusModule\ComicSort.Modules.MenusModule.csproj" />
     <ProjectReference Include="..\Modules\ComicSort.Modules.ModuleName\ComicSort.Modules.ModuleName.csproj" />
     <ProjectReference Include="..\Services\ComicSort.Services.Interfaces\ComicSort.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Services\ComicSort.Services\ComicSort.Services.csproj" />
