@@ -1,9 +1,13 @@
-﻿using ComicSort.HostBuilders;
+﻿using ComicSort.DataAccess;
+using ComicSort.Domain.Models;
+using ComicSort.HostBuilders;
 using ComicSort.Modules.MenusModule;
 using ComicSort.Modules.ModuleName;
 using ComicSort.Services;
 using ComicSort.Services.Interfaces;
 using ComicSort.Views;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -26,7 +30,8 @@ namespace ComicSort
         public static IHostBuilder CreateHostBuilder(string[] args = null)
         {
             return Host.CreateDefaultBuilder(args)
-                .AddConfig();
+                .AddConfig()
+                .AddDBContext();
         }
 
         protected override Window CreateShell()
@@ -37,12 +42,32 @@ namespace ComicSort
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
+            containerRegistry.RegisterSingleton<IDataService<ComicSortLibraries>, GenericDataService<ComicSortLibraries>>();
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             moduleCatalog.AddModule<ModuleNameModule>();
             moduleCatalog.AddModule<MenusModule>();
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            _host.Start();
+
+            ComicSortLibrariesDBContextFactory contextFactory = _host.Services.GetRequiredService<ComicSortLibrariesDBContextFactory>();
+            using (ComicSortLibrariesDBContext context = contextFactory.CreateDbContext())
+            {
+                context.Database.Migrate();
+            }
+            base.OnStartup(e);
+        }
+
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            await _host.StopAsync();
+            _host.Dispose();
+            base.OnExit(e);
         }
     }
 }
