@@ -1,6 +1,9 @@
 ﻿using ComicSort.DataAccess;
 using ComicSort.Domain.Models;
 using ComicSort.HostBuilders;
+using ComicSort.Modules.Dialogs;
+using ComicSort.Modules.Dialogs.ViewModels;
+using ComicSort.Modules.Dialogs.Views;
 using ComicSort.Modules.MenusModule;
 using ComicSort.Modules.ModuleName;
 using ComicSort.Services;
@@ -43,12 +46,14 @@ namespace ComicSort
         {
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             containerRegistry.RegisterSingleton<IDataService<ComicSortLibraries>, GenericDataService<ComicSortLibraries>>();
+            containerRegistry.RegisterDialog<NewLibraryDialog, NewLibraryDialogViewModel>();
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             moduleCatalog.AddModule<ModuleNameModule>();
             moduleCatalog.AddModule<MenusModule>();
+            moduleCatalog.AddModule<DialogsModule>();
         }
 
         protected override void OnStartup(StartupEventArgs e)

@@ -2,7 +2,10 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:ComicSort">
 
-    <Color x:Key="DarkBackground">#393E46</Color>
+    <Color x:Key="DarkBackground">#FF252526</Color>
     <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{StaticResource DarkBackground}" />
+
+    <Color x:Key="DarkerBackground">#424242</Color>
+    <SolidColorBrush x:Key="DarkerBackgroundBrush" Color="{StaticResource DarkerBackground}" />
 
 </ResourceDictionary>

@@ -21,11 +21,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComicSort", "ComicSort\Comi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComicSort.Core", "ComicSort\ComicSort.Core\ComicSort.Core.csproj", "{58EA1838-0342-4659-971E-660210930135}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.Domain", "ComicSort\ComicSort.Domain\ComicSort.Domain.csproj", "{C5225277-AF1E-443B-9F4D-8C3365158230}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComicSort.Domain", "ComicSort\ComicSort.Domain\ComicSort.Domain.csproj", "{C5225277-AF1E-443B-9F4D-8C3365158230}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.DataAccess", "ComicSort\ComicSort.DataAccess\ComicSort.DataAccess.csproj", "{DF446A7E-B618-47A8-AC2F-464AC1BF16F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComicSort.DataAccess", "ComicSort\ComicSort.DataAccess\ComicSort.DataAccess.csproj", "{DF446A7E-B618-47A8-AC2F-464AC1BF16F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.Modules.MenusModule", "ComicSort\Modules\ComicSort.Modules.MenusModule\ComicSort.Modules.MenusModule.csproj", "{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComicSort.Modules.MenusModule", "ComicSort\Modules\ComicSort.Modules.MenusModule\ComicSort.Modules.MenusModule.csproj", "{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicSort.Modules.Dialogs", "ComicSort\Modules\ComicSort.Modules.Dialogs\ComicSort.Modules.Dialogs.csproj", "{B2C53AB2-8FF1-4652-9886-C5CF57CBE8C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C53AB2-8FF1-4652-9886-C5CF57CBE8C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C53AB2-8FF1-4652-9886-C5CF57CBE8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C53AB2-8FF1-4652-9886-C5CF57CBE8C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C53AB2-8FF1-4652-9886-C5CF57CBE8C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +85,7 @@ Global
 		{C76A41D0-113E-4B81-86DC-12BA9D221629} = {416678E8-AE08-479E-8B84-797218DA0CDE}
 		{D3575324-5F28-4119-98CD-DC11D4973DB6} = {416678E8-AE08-479E-8B84-797218DA0CDE}
 		{8DCC8C2D-B2E1-4D51-B8D2-ACEACCC8B963} = {64287A99-304C-48E4-995F-B14770F5A7EA}
+		{B2C53AB2-8FF1-4652-9886-C5CF57CBE8C9} = {64287A99-304C-48E4-995F-B14770F5A7EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBC1A110-D821-464C-BF43-DA1843F8F19D}

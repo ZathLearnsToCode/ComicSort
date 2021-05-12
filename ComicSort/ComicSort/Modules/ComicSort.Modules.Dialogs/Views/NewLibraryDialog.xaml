@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="ComicSort.Modules.Dialogs.Views.NewLibraryDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             
+             Width="375" Height="175">
+
+    <prism:Dialog.WindowStyle>
+        <Style TargetType="Window">
+            <Setter Property="prism:Dialog.WindowStartupLocation" Value="CenterOwner" />
+            <Setter Property="ResizeMode" Value="NoResize"/>
+            <Setter Property="ShowInTaskbar" Value="False"/>
+            <Setter Property="SizeToContent" Value="WidthAndHeight"/>
+            <Setter Property="WindowStyle" Value="ToolWindow"/>
+            <Setter Property="Background" Value="{StaticResource DarkerBackgroundBrush}"/>
+        </Style>
+    </prism:Dialog.WindowStyle>
+
+    <Border Padding="10">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Margin="0 0 0 2" FontWeight="Bold" Foreground="White" Text="Enter the new library's name : "/>
+                    <TextBox Padding="2" Margin="0 0 5 10" Text="{Binding LibraryName}"/>
+                    <TextBlock Margin="0 0 0 2" FontWeight="Bold" Foreground="White" Text="Select the location for your library : "/>
+                </StackPanel>
+
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Padding="2" Margin="0 0 5 0" Text="{Binding LibraryPath}"/>
+                <Button Grid.Column="1" Margin="5 0 5 0" Content="Browse" Command="{Binding BrowseCommand}"/>
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="3">
+                    <TextBlock Text="Library Type" FontWeight="Bold" Foreground="White"/>
+                    <ComboBox  Width="95" Margin="0 2 5 0" HorizontalAlignment="Left"
+                               ItemsSource="{Binding LibraryTypes}"
+                               SelectedItem="{Binding SelectedType}">
+
+                    </ComboBox>
+                </StackPanel>
+
+                <Button Grid.Column="1" Margin="0 15 5 0"  Content="Cancel" Command="{Binding CancelCommand}"/>
+                <Button Grid.Column="2" Margin="5 15 5 0" Content="OK" Command="{Binding OKCommand}"/>
+
+            </Grid>
+        </StackPanel>
+    </Border>
+    </UserControl>
