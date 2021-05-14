@@ -21,7 +21,7 @@ namespace ComicSort.HostBuilders
                 Action<DbContextOptionsBuilder> configureDBContext = o => o.UseSqlite(connectionString);
 
                 services.AddDbContext<ComicSortLibrariesDBContext>(configureDBContext);
-                services.AddSingleton<ComicSortLibrariesDBContextFactory>(new ComicSortLibrariesDBContextFactory(configureDBContext));
+                
             });
 
             return host;

@@ -45,7 +45,7 @@ namespace ComicSort
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
-            containerRegistry.RegisterSingleton<IDataService<ComicSortLibraries>, GenericDataService<ComicSortLibraries>>();
+            
             containerRegistry.RegisterDialog<NewLibraryDialog, NewLibraryDialogViewModel>();
         }
 
@@ -59,12 +59,8 @@ namespace ComicSort
         protected override void OnStartup(StartupEventArgs e)
         {
             _host.Start();
-
-            ComicSortLibrariesDBContextFactory contextFactory = _host.Services.GetRequiredService<ComicSortLibrariesDBContextFactory>();
-            using (ComicSortLibrariesDBContext context = contextFactory.CreateDbContext())
-            {
-                context.Database.Migrate();
-            }
+                                 
+            
             base.OnStartup(e);
         }
 

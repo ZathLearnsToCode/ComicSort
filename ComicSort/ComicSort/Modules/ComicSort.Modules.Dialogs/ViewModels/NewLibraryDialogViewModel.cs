@@ -14,7 +14,7 @@ namespace ComicSort.Modules.Dialogs.ViewModels
     {
 
         public List<string> LibraryTypes { get; set; } = new() { "XML", "Sqlite" };
-        private readonly IDataService<ComicSortLibraries> _dataService;
+       
 
 
         private string _selectedType;
@@ -43,11 +43,7 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             
         }
 
-        public NewLibraryDialogViewModel(IDataService<ComicSortLibraries> dataService)
-        {
-            _dataService = dataService;
-        }
-
+        
         private DelegateCommand _okCommand;
         public DelegateCommand OKCommand =>
             _okCommand ?? (_okCommand = new DelegateCommand(ExecuteOKCommand));
@@ -93,13 +89,9 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
         private void CreateSQLiteDatabase(string libraryName, string libraryPath, string selectedType)
         {
-            ComicSortLibraries comicSortLibraries = new ComicSortLibraries()
-            {
-                LibraryPath = libraryPath,
-                LibraryName = libraryName,
-                LibraryType = selectedType,
-                Created = DateTime.Now.ToString()
-            };
+            var path = FileUtilities.CreateDirectory(libraryPath, libraryName);
+
+                      
 
             
         }
