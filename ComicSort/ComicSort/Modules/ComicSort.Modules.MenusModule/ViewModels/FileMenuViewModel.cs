@@ -1,4 +1,7 @@
-﻿using Prism.Commands;
+﻿using ComicSort.DataAccess;
+using ComicSort.Domain.Models;
+using Microsoft.Win32;
+using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
 using System;
@@ -17,6 +20,8 @@ namespace ComicSort.Modules.MenusModule.ViewModels
             _dialogService = dialogService;
         }
 
+        #region New Library Command
+
         private DelegateCommand newLibraryCommand;
         public DelegateCommand NewLibraryCommand =>
             newLibraryCommand ?? (newLibraryCommand = new DelegateCommand(ExecuteNewLibraryCommand));
@@ -24,6 +29,34 @@ namespace ComicSort.Modules.MenusModule.ViewModels
         void ExecuteNewLibraryCommand()
         {
             _dialogService.ShowDialog("NewLibraryDialog", null, null);
+        }
+
+        #endregion
+
+        private DelegateCommand _addFilesCommand;
+        public DelegateCommand AddFilesCommand =>
+            _addFilesCommand ?? (_addFilesCommand = new DelegateCommand(ExecuteAddFilesCommand));
+
+        void ExecuteAddFilesCommand()
+        {
+            var comiclist = new ComicBookList();
+            var comicbook = new ComicBook();
+            var ofd = new OpenFileDialog();
+            ofd.Multiselect = true;
+            ofd.ShowDialog();
+            var filelist = ofd.FileNames;
+
+            foreach(var files in filelist)
+            {
+                                
+            }
+
+            using (var db = new ComicDBContext())
+            {
+                db.Add(comiclist);
+                db.SaveChanges();
+            }
+            
         }
 
         #region Exit Command

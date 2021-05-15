@@ -11,6 +11,12 @@ namespace ComicSort.DataAccess
     public class ComicSortLibrariesDBContext : DbContext
     {
         public DbSet<ComicSortLibraries> ComicSortLibraries { get; set; }
-        public ComicSortLibrariesDBContext(DbContextOptions options) : base(options) { }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite(@"Data Source = ComicSortdb.db");
+            base.OnConfiguring(optionsBuilder);
+        }
+
     }
 }

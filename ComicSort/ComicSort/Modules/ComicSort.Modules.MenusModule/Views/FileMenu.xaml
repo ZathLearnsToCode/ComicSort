@@ -5,5 +5,6 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
           Header="_File">
     <MenuItem Header="_New Library" Command="{Binding NewLibraryCommand}"/>
+    <MenuItem Header="_Add Files..." Command="{Binding AddFilesCommand}"/>
     <MenuItem Header="_Exit" Command="{Binding ExitCommand}"/>
 </MenuItem>

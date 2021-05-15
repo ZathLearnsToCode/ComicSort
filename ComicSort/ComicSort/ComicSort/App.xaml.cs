@@ -33,8 +33,8 @@ namespace ComicSort
         public static IHostBuilder CreateHostBuilder(string[] args = null)
         {
             return Host.CreateDefaultBuilder(args)
-                .AddConfig()
-                .AddDBContext();
+                .AddConfig();
+                //.AddDBContext();
         }
 
         protected override Window CreateShell()
@@ -59,6 +59,7 @@ namespace ComicSort
         protected override void OnStartup(StartupEventArgs e)
         {
             _host.Start();
+            
                                  
             
             base.OnStartup(e);

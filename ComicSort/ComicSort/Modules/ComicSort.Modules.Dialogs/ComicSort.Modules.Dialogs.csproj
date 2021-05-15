@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ComicSort.Core\ComicSort.Core.csproj" />
+    <ProjectReference Include="..\..\ComicSort.DataAccess\ComicSort.DataAccess.csproj" />
     <ProjectReference Include="..\..\ComicSort.Domain\ComicSort.Domain.csproj" />
     <ProjectReference Include="..\..\Services\ComicSort.Services.Interfaces\ComicSort.Services.Interfaces.csproj" />
   </ItemGroup>

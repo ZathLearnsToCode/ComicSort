@@ -1,4 +1,5 @@
 ﻿using ComicSort.Core;
+using ComicSort.DataAccess;
 using ComicSort.Domain.Models;
 using ComicSort.Services.Interfaces;
 using Prism.Commands;
@@ -14,6 +15,7 @@ namespace ComicSort.Modules.Dialogs.ViewModels
     {
 
         public List<string> LibraryTypes { get; set; } = new() { "XML", "Sqlite" };
+        private string result;
        
 
 
@@ -50,14 +52,17 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
         void ExecuteOKCommand()
         {
+            
             if (_selectedType != "XML")
             {
-                CreateSQLiteDatabase(_libraryName, _libraryPath, _selectedType);
+                result = CreateSQLiteDatabase(_libraryName, _libraryPath, _selectedType);
             }
             else
             {
                 CreateXmlDatabase(_libraryName, _libraryPath, _selectedType);
             }
+
+            
 
             RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
         }
@@ -87,12 +92,14 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             
         }
 
-        private void CreateSQLiteDatabase(string libraryName, string libraryPath, string selectedType)
+        private string CreateSQLiteDatabase(string libraryName, string libraryPath, string selectedType)
         {
             var path = FileUtilities.CreateDirectory(libraryPath, libraryName);
+            ComicDBContext context = new();
+            var libraryFile = context.CreateConnectionString(libraryName, libraryPath);
+            context.Database.EnsureCreated();
 
-                      
-
+            return libraryFile;
             
         }
 
@@ -107,7 +114,24 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
         public void OnDialogClosed()
         {
-            
+            var result1 = FileUtilities.GetFileInfos(result);
+
+            ComicSortLibraries libraries = new()
+            {
+                LibraryPath = result1.FullName,
+                LibraryName = _libraryName,
+                Created = result1.CreationTime.ToString(),
+                LastAccessed = result1.LastWriteTime.ToString(),
+                LibraryType = _selectedType,
+                LibraryFile = result1.Name
+
+
+            };
+
+            ComicSortLibrariesDBContext librariesDBContext = new();
+
+            librariesDBContext.Add(libraries);
+            librariesDBContext.SaveChanges();
         }
 
         public void OnDialogOpened(IDialogParameters parameters)
