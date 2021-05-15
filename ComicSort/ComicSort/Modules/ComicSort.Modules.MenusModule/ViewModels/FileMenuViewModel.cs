@@ -39,23 +39,7 @@ namespace ComicSort.Modules.MenusModule.ViewModels
 
         void ExecuteAddFilesCommand()
         {
-            var comiclist = new ComicBookList();
-            var comicbook = new ComicBook();
-            var ofd = new OpenFileDialog();
-            ofd.Multiselect = true;
-            ofd.ShowDialog();
-            var filelist = ofd.FileNames;
-
-            foreach(var files in filelist)
-            {
-                                
-            }
-
-            using (var db = new ComicDBContext())
-            {
-                db.Add(comiclist);
-                db.SaveChanges();
-            }
+            
             
         }
 

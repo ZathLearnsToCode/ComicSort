@@ -14,7 +14,7 @@ namespace ComicSort.DataAccess
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(@"Data Source = ComicSortdb.db");
+            optionsBuilder.UseSqlite(@"Data Source = E:\Test\ComicSortdb.db");
             base.OnConfiguring(optionsBuilder);
         }
 

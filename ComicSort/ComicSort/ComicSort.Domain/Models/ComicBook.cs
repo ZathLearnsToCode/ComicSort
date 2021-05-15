@@ -15,7 +15,6 @@ namespace ComicSort.Domain.Models
         public string IssueNumber { get; set; }
         public string Volume { get; set; }
         public int PageCount { get; set; }
-        public Page Pages { get; set; }
         public string DateAdded { get; set; }
         public long FileSize { get; set; }
         public string DateModified { get; set; }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace ComicSort.DataAccess.Migrations.ComicSortLibrariesDB
+namespace ComicSort.DataAccess.Migrations
 {
     public partial class Initial : Migration
     {

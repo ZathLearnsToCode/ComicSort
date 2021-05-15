@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ComicSort.Domain.Models
 {
-    public class ComicSortLibraries : DomainObject
+    public class ComicSortLibraries
     {
-        
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string LibraryPath { get; set; }
         public string LibraryFile { get; set; }
         public string LibraryName { get; set; }
