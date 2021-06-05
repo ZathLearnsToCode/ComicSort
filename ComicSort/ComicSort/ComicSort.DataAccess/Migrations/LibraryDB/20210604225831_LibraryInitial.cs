@@ -1,14 +1,14 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace ComicSort.DataAccess.Migrations
+namespace ComicSort.DataAccess.Migrations.LibraryDB
 {
-    public partial class Initial : Migration
+    public partial class LibraryInitial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ComicSortLibraries",
+                name: "Libraries",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -21,14 +21,14 @@ namespace ComicSort.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ComicSortLibraries", x => x.Id);
+                    table.PrimaryKey("PK_Libraries", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ComicSortLibraries");
+                name: "Libraries");
         }
     }
 }

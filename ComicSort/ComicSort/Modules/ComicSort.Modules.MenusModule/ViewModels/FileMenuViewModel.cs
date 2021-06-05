@@ -20,18 +20,14 @@ namespace ComicSort.Modules.MenusModule.ViewModels
             _dialogService = dialogService;
         }
 
-        #region New Library Command
+        private DelegateCommand _libraryManagementCommand;
+        public DelegateCommand LibraryManagementCommand =>
+            _libraryManagementCommand ?? (_libraryManagementCommand = new DelegateCommand(ExecuteLibraryManagementCommand));
 
-        private DelegateCommand newLibraryCommand;
-        public DelegateCommand NewLibraryCommand =>
-            newLibraryCommand ?? (newLibraryCommand = new DelegateCommand(ExecuteNewLibraryCommand));
-
-        void ExecuteNewLibraryCommand()
+        void ExecuteLibraryManagementCommand()
         {
-            _dialogService.ShowDialog("NewLibraryDialog", null, null);
+            _dialogService.ShowDialog("LibraryManagementDialog", null, null);
         }
-
-        #endregion
 
         private DelegateCommand _addFilesCommand;
         public DelegateCommand AddFilesCommand =>

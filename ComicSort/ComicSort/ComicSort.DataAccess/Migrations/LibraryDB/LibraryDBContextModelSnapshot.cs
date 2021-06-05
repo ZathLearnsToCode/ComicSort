@@ -3,16 +3,14 @@ using System;
 using ComicSort.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ComicSort.DataAccess.Migrations
+namespace ComicSort.DataAccess.Migrations.LibraryDB
 {
-    [DbContext(typeof(ComicSortLibrariesDBContext))]
-    [Migration("20210515210535_Initial")]
-    partial class Initial
+    [DbContext(typeof(LibraryDBContext))]
+    partial class LibraryDBContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +42,7 @@ namespace ComicSort.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ComicSortLibraries");
+                    b.ToTable("Libraries");
                 });
 #pragma warning restore 612, 618
         }

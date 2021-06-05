@@ -13,18 +13,6 @@ namespace ComicSort.HostBuilders
 {
     public static class AddDBContextHostBuilderExtensions
     {
-        public static IHostBuilder AddDBContext(this IHostBuilder host)
-        {
-            host.ConfigureServices((context, services) =>
-            {
-                string connectionString = context.Configuration.GetConnectionString("SQLite_ComicSortLibraries");
-                Action<DbContextOptionsBuilder> configureDBContext = o => o.UseSqlite(connectionString);
-
-                services.AddDbContext<ComicSortLibrariesDBContext>(configureDBContext);
-                
-            });
-
-            return host;
-        }
+        
     }
 }

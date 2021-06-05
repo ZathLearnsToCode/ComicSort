@@ -47,6 +47,7 @@ namespace ComicSort
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             
             containerRegistry.RegisterDialog<NewLibraryDialog, NewLibraryDialogViewModel>();
+            containerRegistry.RegisterDialog<LibraryManagementDialog, LibraryManagementDialogViewModel>();
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
