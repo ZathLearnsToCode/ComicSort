@@ -1,6 +1,7 @@
 ﻿using ComicSort.Core;
 using ComicSort.DataAccess;
 using ComicSort.Domain.Models;
+using ComicSort.Domain.Models.XMLModels;
 using ComicSort.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Prism.Commands;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 
 namespace ComicSort.Modules.Dialogs.ViewModels
 {
@@ -61,7 +63,7 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             }
             else
             {
-                CreateXmlDatabase(_libraryName, _libraryPath, _selectedType);
+                result = CreateXmlDatabase(_libraryName, _libraryPath, _selectedType);
             }
 
             
@@ -89,13 +91,22 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
-        private void CreateXmlDatabase(string libraryName, string libraryPath, string selectedType)
+        private string CreateXmlDatabase(string libraryName, string libraryPath, string selectedType)
         {
             var path = FileUtilities.CreateDirectory(libraryPath, libraryName);
-            Directory.SetCurrentDirectory(path);
 
+            string xmlfile = path + @"\" + $"{ libraryName}" + ".xml";
 
+            ComicDatabaseXml comicBook = new();
+            
+            using(var stream = new StreamWriter(xmlfile))
+            {
+                var xmlSerializer = new XmlSerializer(typeof(ComicDatabaseXml));
 
+                xmlSerializer.Serialize(stream, comicBook);
+            }
+
+            return xmlfile;
         }
 
         private string CreateSQLiteDatabase(string libraryName, string libraryPath, string selectedType)
@@ -141,7 +152,7 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
 
                     context.Add(libraries);
-                    context.SaveChanges();
+                    context.SaveChangesAsync();
                 }
             }      
         }

@@ -15,6 +15,8 @@ namespace ComicSort.Modules.Dialogs.ViewModels
         private List<ComicSortLibraries> _list = new();
         
         private ObservableCollection<ComicSortLibraries> _libraries;
+
+        
         public ObservableCollection<ComicSortLibraries> Libraries
         {
             get { return _libraries; }
@@ -48,6 +50,33 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             });
         }
 
+        private DelegateCommand _okCommand;
+        public DelegateCommand OKCommand =>
+            _okCommand ?? (_okCommand = new DelegateCommand(ExecuteOKCommand));
+
+        void ExecuteOKCommand()
+        {
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+        }
+
+        private DelegateCommand _cancelCommand;
+        public DelegateCommand CancelCommand =>
+            _cancelCommand ?? (_cancelCommand = new DelegateCommand(ExecuteCancelCommand));
+
+        void ExecuteCancelCommand()
+        {
+            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+        }
+
+        private DelegateCommand _deleteCommand;
+        public DelegateCommand DeleteCommand =>
+            _deleteCommand ?? (_deleteCommand = new DelegateCommand(ExecuteDeleteCommand));
+
+        void ExecuteDeleteCommand()
+        {
+            
+        }
+
         public string Title => "Manage your Libraries";
 
         public event Action<IDialogResult> RequestClose;
@@ -59,7 +88,10 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
         public void OnDialogClosed()
         {
-
+            using (var context = new LibraryDBContext())
+            {
+                context.SaveChangesAsync();
+            }
         }
 
         public void OnDialogOpened(IDialogParameters parameters)

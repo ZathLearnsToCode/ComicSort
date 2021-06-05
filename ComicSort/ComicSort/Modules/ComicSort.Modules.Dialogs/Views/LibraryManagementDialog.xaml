@@ -37,7 +37,7 @@
                 <TextBlock Grid.Column="1" Grid.Row="0" Margin="5 5 0 5"  Text="Libraries"/>
                 <StackPanel Grid.Column="1" Grid.Row="1">
 
-                    <ListBox Margin="5" Height="325" ItemsSource="{Binding Libraries}">
+                    <ListBox Margin="5" Height="325" ItemsSource="{Binding Libraries}" SelectedItem="{Binding SelectedItem}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -49,6 +49,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
 
+                   
                     <Grid Grid.Row="2" Grid.Column="1">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Margin="5 5 5 5" Padding="2" Content="Cancel" Command="{Binding CancelCommand}"/>
