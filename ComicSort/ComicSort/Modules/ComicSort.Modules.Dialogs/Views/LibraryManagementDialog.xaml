@@ -37,7 +37,7 @@
                 <TextBlock Grid.Column="1" Grid.Row="0" Margin="5 5 0 5"  Text="Libraries"/>
                 <StackPanel Grid.Column="1" Grid.Row="1">
 
-                    <ListBox Margin="5" Height="325" ItemsSource="{Binding Libraries}" SelectedItem="{Binding SelectedItem}">
+                    <ListBox Margin="5" Height="325" ItemsSource="{Binding Libraries}" SelectedItem="{Binding SelectedItems}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">

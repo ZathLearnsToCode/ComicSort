@@ -1,11 +1,13 @@
 ﻿using ComicSort.DataAccess;
 using ComicSort.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace ComicSort.Modules.Dialogs.ViewModels
@@ -22,6 +24,14 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             get { return _libraries; }
             set { SetProperty(ref _libraries, value); }
         }
+
+        private ComicSortLibraries _selectedItems;
+        public ComicSortLibraries SelectedItems
+        {
+            get { return _selectedItems; }
+            set { SetProperty(ref _selectedItems, value); }
+        }
+
         public LibraryManagementDialogViewModel(IDialogService dialogService)
         {
             
@@ -74,7 +84,23 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
         void ExecuteDeleteCommand()
         {
-            
+            using(var context = new LibraryDBContext())
+            {
+                var test = context.Libraries.Where(e => e.Id == _selectedItems.Id).FirstOrDefault();
+
+                var dir = Directory.GetParent(_selectedItems.LibraryPath);
+
+                if(Directory.Exists(dir.ToString()))
+                    Directory.Delete(dir.ToString(), true);
+                else
+                    System.Windows.Forms.MessageBox.Show("Test");
+
+                context.Remove(test);
+                context.SaveChangesAsync();
+
+                _list = context.Libraries.ToList();
+                Libraries = new(_list);
+            }
         }
 
         public string Title => "Manage your Libraries";
