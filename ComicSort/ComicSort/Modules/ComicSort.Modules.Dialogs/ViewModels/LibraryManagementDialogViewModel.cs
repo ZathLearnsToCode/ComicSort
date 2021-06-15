@@ -92,9 +92,7 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
                 if(Directory.Exists(dir.ToString()))
                     Directory.Delete(dir.ToString(), true);
-                else
-                    System.Windows.Forms.MessageBox.Show("Test");
-
+                
                 context.Remove(test);
                 context.SaveChangesAsync();
 
