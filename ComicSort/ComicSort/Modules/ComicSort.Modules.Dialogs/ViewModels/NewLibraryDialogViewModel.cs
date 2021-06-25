@@ -44,6 +44,8 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             set { SetProperty(ref _libraryPath, value); }
         }
 
+        
+
         public NewLibraryDialogViewModel()
         {
             
@@ -142,8 +144,8 @@ namespace ComicSort.Modules.Dialogs.ViewModels
                     {
                         LibraryPath = result1.FullName,
                         LibraryName = _libraryName,
-                        Created = result1.CreationTime.ToString(),
-                        LastAccessed = result1.LastWriteTime.ToString(),
+                        Created = result1.CreationTime,
+                        LastAccessed = result1.LastWriteTime,
                         LibraryType = _selectedType,
                         LibraryFile = result1.Name
 

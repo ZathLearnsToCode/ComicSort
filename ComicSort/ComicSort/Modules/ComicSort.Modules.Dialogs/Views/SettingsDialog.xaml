@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"             
              prism:ViewModelLocator.AutoWireViewModel="True"
-             Height="800" Width="800">
+             Height="600" Width="600">
 
     <prism:Dialog.WindowStyle>
         <Style TargetType="Window">
@@ -15,28 +15,61 @@
         </Style>
     </prism:Dialog.WindowStyle>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         
 
-        <TabControl TabStripPlacement="Left">
+        <TabControl TabStripPlacement="Left" Grid.Row="0" Margin="0,15">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TabItem}">
+                                <Border x:Name="Spacer"
+                                        Width="Auto" Height="Auto"
+                                        Margin="0,0,0,0" Padding="0,0,10,20"
+                                        BorderBrush="Transparent" BorderThickness="0">
+                                    <Border x:Name="Border"
+                                            Width="Auto" MinWidth="100" MinHeight="30"
+                                            VerticalAlignment="Bottom"
+                                            Background="Gray" BorderBrush="DarkGray" BorderThickness="0,0,0,0" CornerRadius="6,6,0,0"
+                                            Cursor="Hand">
+                                        <ContentPresenter x:Name="ContentSite"
+                                                          Width="Auto" Height="Auto"
+                                                          Margin="8,3,8,3" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          ContentSource="Header" TextElement.FontFamily="Arial" TextElement.FontSize="10pt" TextElement.Foreground="Black"/>
+                                    </Border>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
+            
             <TabItem Header="Libraries">
                 <StackPanel Orientation="Vertical">
-                    <Expander Header="Book Folders" IsExpanded="True">
+                    <Expander Header="Book Folders" IsExpanded="True" Background="LightGray">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <ListBox Grid.Row="0" Width="377" Height="120" ItemsSource="{Binding}">
+                            <ListBox Grid.Row="0" Width="377" Height="120" ItemsSource="{Binding WatchFolders}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="Test"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsWatched}"/>
+                                            <TextBlock Text="{Binding FolderPath}"/>
+                                        </StackPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
 
                             <StackPanel Grid.Column="1" Orientation="Vertical">
-                                <Button Content="Add..."/>
+                                <Button Content="Add..." Command="{Binding AddCommand}"/>
                                 <Button Content="Change..."/>
                                 <Button Content="Remove"/>
                                 <Button Content="Open"/>
@@ -44,7 +77,29 @@
                         </Grid>
                     </Expander>
                     <Expander Header="Scanning">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
 
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+
+                            <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="false"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Automatically remove missing files from library during scan"/>
+                            <Button Grid.Row="0" Grid.Column="2" Content="Scan" />
+
+                            <CheckBox Grid.Row="1" Grid.Column="0" IsChecked="False"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Files manually removed from the library will not be readded"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="test text" HorizontalAlignment="Center"/>
+                        </Grid>
+                        
                     </Expander>
                     <Expander Header="Display">
 
@@ -57,5 +112,17 @@
             
             <TabItem Header="Advanced"/>
         </TabControl>
+
+        <Grid Grid.Row="1"  HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"  Content="OK"/>
+            <Button Grid.Column="1"  Content="Cancel" Command="{Binding CancelCommand}"/>
+            <Button Grid.Column="2"  Content="Apply"/>
+        </Grid>
     </Grid>
 </UserControl>

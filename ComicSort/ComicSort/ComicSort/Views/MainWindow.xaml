@@ -8,6 +8,8 @@
         Background="{StaticResource DarkBackgroundBrush}">
     <DockPanel LastChildFill="True">
         <ContentControl DockPanel.Dock="Top" prism:RegionManager.RegionName="{x:Static core:RegionNames.MenuRegion}"/>
+        <ContentControl DockPanel.Dock="Left" prism:RegionManager.RegionName="{x:Static core:RegionNames.SmartListRegion}"/>
+        <ContentControl DockPanel.Dock="Bottom" prism:RegionManager.RegionName="{x:Static core:RegionNames.StatusRegion}"/>
         <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.ContentRegion}" />
     </DockPanel>
 </Window>

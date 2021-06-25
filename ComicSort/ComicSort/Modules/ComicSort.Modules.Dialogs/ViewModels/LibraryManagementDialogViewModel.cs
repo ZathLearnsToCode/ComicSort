@@ -32,6 +32,8 @@ namespace ComicSort.Modules.Dialogs.ViewModels
             set { SetProperty(ref _selectedItems, value); }
         }
 
+        
+
         public LibraryManagementDialogViewModel(IDialogService dialogService)
         {
             
@@ -112,6 +114,8 @@ namespace ComicSort.Modules.Dialogs.ViewModels
 
         public void OnDialogClosed()
         {
+            
+
             using (var context = new LibraryDBContext())
             {
                 context.SaveChangesAsync();

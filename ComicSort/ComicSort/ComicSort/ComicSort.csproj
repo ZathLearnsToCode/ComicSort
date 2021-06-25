@@ -19,6 +19,8 @@
     <ProjectReference Include="..\Modules\ComicSort.Modules.Dialogs\ComicSort.Modules.Dialogs.csproj" />
     <ProjectReference Include="..\Modules\ComicSort.Modules.MenusModule\ComicSort.Modules.MenusModule.csproj" />
     <ProjectReference Include="..\Modules\ComicSort.Modules.ModuleName\ComicSort.Modules.ModuleName.csproj" />
+    <ProjectReference Include="..\Modules\ComicSort.Modules.SmartList\ComicSort.Modules.SmartList.csproj" />
+    <ProjectReference Include="..\Modules\ComicSort.Modules.Status\ComicSort.Modules.Status.csproj" />
     <ProjectReference Include="..\Services\ComicSort.Services.Interfaces\ComicSort.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Services\ComicSort.Services\ComicSort.Services.csproj" />
   </ItemGroup>

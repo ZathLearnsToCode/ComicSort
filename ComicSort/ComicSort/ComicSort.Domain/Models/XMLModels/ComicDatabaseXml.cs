@@ -15,6 +15,8 @@ namespace ComicSort.Domain.Models.XMLModels
 
         [XmlElement("Books")]
         public List<ComicBookXML> Books { get; set; }
+        [XmlElement]
+        public WatchFolder WatchFolders { get; set; }
 
         public ComicDatabaseXml()
         {

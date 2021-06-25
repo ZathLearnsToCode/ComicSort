@@ -6,6 +6,8 @@ using ComicSort.Modules.Dialogs.ViewModels;
 using ComicSort.Modules.Dialogs.Views;
 using ComicSort.Modules.MenusModule;
 using ComicSort.Modules.ModuleName;
+using ComicSort.Modules.SmartList;
+using ComicSort.Modules.Status;
 using ComicSort.Services;
 using ComicSort.Services.Interfaces;
 using ComicSort.Views;
@@ -24,6 +26,8 @@ namespace ComicSort
     public partial class App
     {
         private readonly IHost _host;
+
+        
 
         public App()
         {
@@ -56,11 +60,14 @@ namespace ComicSort
             moduleCatalog.AddModule<ModuleNameModule>();
             moduleCatalog.AddModule<MenusModule>();
             moduleCatalog.AddModule<DialogsModule>();
+            moduleCatalog.AddModule<SmartListModule>();
+            moduleCatalog.AddModule<StatusModule>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             _host.Start();
+
             
                                  
             
