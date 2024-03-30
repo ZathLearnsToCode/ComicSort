@@ -1,0 +1,2 @@
+# ComicSort
+ Alternative to ComicRack
