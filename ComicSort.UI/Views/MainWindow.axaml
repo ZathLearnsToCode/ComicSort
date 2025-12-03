@@ -15,6 +15,13 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	<Grid RowDefinitions="*,*">
+		<StackPanel Grid.Row="0">
+			<Button Content="Add Folder to Library" Command="{Binding AddFolderCommand}"/>
+			<Button Content="Scan" Command="{Binding ScanCommand}"/>
+		</StackPanel>
+
+		<TextBlock Grid.Row="1" Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	</Grid>
 
 </Window>
