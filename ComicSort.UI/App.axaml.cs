@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using ComicSort.Core.Services;
 using ComicSort.UI.Services;
 using ComicSort.UI.ViewModels;
 using ComicSort.UI.Views;
@@ -26,6 +27,7 @@ namespace ComicSort.UI
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<IDialogServices, DialogServices>();
+                    services.AddSingleton<ISettingsServices, SettingsServices>();
 
                     // Register ViewModels
                     services.AddTransient<MainWindowViewModel>();
