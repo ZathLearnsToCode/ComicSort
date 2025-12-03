@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ComicSort.Core/ComicSort.Core.csproj" />
+  <Project Path="ComicSort.Data/ComicSort.Data.csproj" />
+  <Project Path="ComicSort.UI/ComicSort.UI.csproj" />
+</Solution>
