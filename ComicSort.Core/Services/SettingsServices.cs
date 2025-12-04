@@ -35,5 +35,26 @@ namespace ComicSort.Core.Services
             var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_path, json);
         }
+
+        public bool TryAddComicFolder(string folderPath, out string? error)
+        {
+            error = null;
+
+            var normalized = Path.GetFullPath(folderPath).TrimEnd(Path.DirectorySeparatorChar);
+
+            // Prevent duplicates (case-insensitive)
+            if (Settings.ComicFolders.Any(x =>
+                Path.GetFullPath(x).TrimEnd(Path.DirectorySeparatorChar)
+                .Equals(normalized, StringComparison.OrdinalIgnoreCase)))
+            {
+                error = "This folder has already been added.";
+                return false;
+            }
+
+            Settings.ComicFolders.Add(normalized);
+            Save(Settings);
+
+            return true;
+        }
     }
 }

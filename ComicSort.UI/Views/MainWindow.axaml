@@ -19,6 +19,9 @@
 		<StackPanel Grid.Row="0">
 			<Button Content="Add Folder to Library" Command="{Binding AddFolderCommand}"/>
 			<Button Content="Scan" Command="{Binding ScanCommand}"/>
+			<TextBlock Text="{Binding ErrorMessage}"
+           Foreground="Red"
+           Margin="0,8,0,0"/>
 		</StackPanel>
 
 		<TextBlock Grid.Row="1" Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>

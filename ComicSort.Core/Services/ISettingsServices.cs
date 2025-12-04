@@ -9,6 +9,7 @@ namespace ComicSort.Core.Services
     {
         ComicSortSettings Load();
         void Save(ComicSortSettings settings);
+        bool TryAddComicFolder(string folderPath, out string? error);
 
         ComicSortSettings Settings { get; }
     }
