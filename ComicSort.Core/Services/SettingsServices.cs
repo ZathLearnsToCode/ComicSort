@@ -8,52 +8,67 @@ namespace ComicSort.Core.Services
 {
     public class SettingsServices : ISettingsServices
     {
-        private readonly string _path;
-        public ComicSortSettings Settings { get; private set; } = new();
+        private readonly string _settingsFile;
+        public ComicSortSettings Settings { get; private set; }
 
         public SettingsServices()
         {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _path = Path.Combine(appData, "ComicSort", "settings.json");
+            var appData =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                         "ComicSort");
 
-            Settings = Load();
+            if (!Directory.Exists(appData))
+                Directory.CreateDirectory(appData);
+
+            _settingsFile = Path.Combine(appData, "settings.json");
+
+            Settings = LoadOrCreateSettings();
         }
 
-        public ComicSortSettings Load()
+        private ComicSortSettings LoadOrCreateSettings()
         {
-            if (!File.Exists(_path))
-                return new ComicSortSettings();
+            if (!File.Exists(_settingsFile))
+            {
+                // CREATE FIRST-RUN DEFAULT SETTINGS
+                var defaults = new ComicSortSettings();
 
-            var json = File.ReadAllText(_path);
-            return JsonSerializer.Deserialize<ComicSortSettings>(json)!;
+                var json = JsonSerializer.Serialize(defaults, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                File.WriteAllText(_settingsFile, json);
+
+                return defaults;
+            }
+
+            // LOAD EXISTING SETTINGS
+            var file = File.ReadAllText(_settingsFile);
+            return JsonSerializer.Deserialize<ComicSortSettings>(file) ?? new ComicSortSettings();
         }
 
-        public void Save(ComicSortSettings settings)
+        public void Save()
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+            var json = JsonSerializer.Serialize(Settings, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
 
-            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_path, json);
+            File.WriteAllText(_settingsFile, json);
         }
 
         public bool TryAddComicFolder(string folderPath, out string? error)
         {
             error = null;
 
-            var normalized = Path.GetFullPath(folderPath).TrimEnd(Path.DirectorySeparatorChar);
-
-            // Prevent duplicates (case-insensitive)
-            if (Settings.ComicFolders.Any(x =>
-                Path.GetFullPath(x).TrimEnd(Path.DirectorySeparatorChar)
-                .Equals(normalized, StringComparison.OrdinalIgnoreCase)))
+            if (Settings.ComicFolders.Contains(folderPath, StringComparer.OrdinalIgnoreCase))
             {
-                error = "This folder has already been added.";
+                error = "This folder is already added.";
                 return false;
             }
 
-            Settings.ComicFolders.Add(normalized);
-            Save(Settings);
-
+            Settings.ComicFolders.Add(folderPath);
+            Save();
             return true;
         }
     }

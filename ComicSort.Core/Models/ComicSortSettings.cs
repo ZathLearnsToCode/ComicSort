@@ -6,6 +6,6 @@ namespace ComicSort.Core.Models
 {
     public class ComicSortSettings
     {
-        public List<string> ComicFolders { get; set; } = [];
+        public List<string> ComicFolders { get; set; } = new();
     }
 }

@@ -7,8 +7,8 @@ namespace ComicSort.Core.Services
 {
     public interface ISettingsServices
     {
-        ComicSortSettings Load();
-        void Save(ComicSortSettings settings);
+        
+        void Save();
         bool TryAddComicFolder(string folderPath, out string? error);
 
         ComicSortSettings Settings { get; }
