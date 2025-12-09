@@ -10,4 +10,8 @@
     <PackageReference Include="SharpCompress" Version="0.42.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ComicSort.Data\ComicSort.Data.csproj" />
+  </ItemGroup>
+
 </Project>

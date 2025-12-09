@@ -1,15 +1,19 @@
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using ComicSort.Core.Services;
+using ComicSort.Data.SQL;
 using ComicSort.UI.Services;
 using ComicSort.UI.ViewModels;
 using ComicSort.UI.Views;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace ComicSort.UI
 {
@@ -26,8 +30,11 @@ namespace ComicSort.UI
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    ConfigureDatabase(services);
+
                     services.AddSingleton<IDialogServices, DialogServices>();
                     services.AddSingleton<ISettingsServices, SettingsServices>();
+                    services.AddSingleton<IComicScanner, ComicScanner>();
 
                     // Register ViewModels
                     services.AddTransient<MainWindowViewModel>();
@@ -36,6 +43,9 @@ namespace ComicSort.UI
                     services.AddTransient<MainWindow>();
                 })
                 .Build();
+
+            ApplyDatabaseMigrations();
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
@@ -49,6 +59,41 @@ namespace ComicSort.UI
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private void ApplyDatabaseMigrations()
+        {
+            using (var scope = AppHost.Services.CreateScope())
+            {
+                try
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<ComicSortDBSQLiteContext>();
+                    db.Database.Migrate(); // RUN SYNC
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Database migration failed: " + ex);
+                    // Optionally show a dialog or delete corrupted DB
+                }
+            }
+        }
+
+        private void ConfigureDatabase(IServiceCollection services)
+        {
+            string dbFolder = Path.Combine(
+                                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                    "ComicSort");
+
+            Directory.CreateDirectory(dbFolder);
+
+            string dbPath = Path.Combine(dbFolder, "ComicSort.db");
+            var migrationsAssembly = typeof(ComicSortDBSQLiteContext).Assembly.FullName;
+
+            services.AddDbContext<ComicSortDBSQLiteContext>(options =>
+            {
+                options.UseSqlite($"Data Source={dbPath}", sqlOptions =>
+                sqlOptions.MigrationsAssembly(migrationsAssembly));
+            });
         }
 
         private void DisableAvaloniaDataAnnotationValidation()
