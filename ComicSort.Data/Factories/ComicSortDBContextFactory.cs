@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using SQLitePCL;
 
 namespace ComicSort.Data.Factories
 {
@@ -11,11 +12,20 @@ namespace ComicSort.Data.Factories
     {
         public ComicSortDBSQLiteContext CreateDbContext(string[] args)
         {
+            // Fix for SQLitePCL initialization
+            Batteries_V2.Init();
+
             var optionsBuilder = new DbContextOptionsBuilder<ComicSortDBSQLiteContext>();
 
-            // Define a simple connection string for the design-time tools to use.
-            // This is just for schema generation; your runtime code uses a different path.
-            optionsBuilder.UseSqlite("Data Source=designTime.db");
+            string dbFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "ComicSort");
+
+            Directory.CreateDirectory(dbFolder);
+
+            string dbPath = Path.Combine(dbFolder, "ComicSort.db");
+
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
             return new ComicSortDBSQLiteContext(optionsBuilder.Options);
         }

@@ -14,5 +14,18 @@ namespace ComicSort.Data.SQL
             : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ComicBookEntity>(entity =>
+            {
+                entity.ToTable("ComicBooks");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FilePath).IsRequired();
+                entity.HasIndex(e => e.FilePath).IsUnique();
+                
+            });
+        }
     }
 }

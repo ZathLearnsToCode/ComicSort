@@ -1,4 +1,5 @@
 ﻿using ComicSort.Core.DTO;
+using ComicSort.Core.Services.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,12 +9,18 @@ namespace ComicSort.Core.Services
     public class ComicScanner : IComicScanner
     {
         private static readonly string[] Extensions = { ".cbr", ".cbz" };
+        private readonly IComicRepository _repository;
+
+        public ComicScanner(IComicRepository repository)
+        {
+            _repository = repository;
+        }
         public Task<List<ComicBookDTO>> ScanFoldersAsync(
             IEnumerable<string> folderPaths,
             IProgress<int>? progress = null,
             CancellationToken cancellationToken = default)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 var results = new List<ComicBookDTO>();
                 int processed = 0;
@@ -25,6 +32,9 @@ namespace ComicSort.Core.Services
 
                     foreach (var file in Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories))
                     {
+                        if (await _repository.ComicExistsAsync(file))
+                            continue;
+
                         cancellationToken.ThrowIfCancellationRequested();
 
                         var ext = Path.GetExtension(file);

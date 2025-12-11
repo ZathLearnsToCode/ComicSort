@@ -3,6 +3,7 @@ using ComicSort.Core.Services;
 using ComicSort.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace ComicSort.UI.ViewModels
     {
         private readonly IDialogServices _dialogServices;
         private readonly ISettingsServices _settings;
+        private readonly IComicLibraryService _library;
 
         private string? _selectedFolder;
         public string Greeting { get; } = "Welcome to ComicSort!";
@@ -19,12 +21,13 @@ namespace ComicSort.UI.ViewModels
         [ObservableProperty]
         private string? errorMessage;
 
-        public MainWindowViewModel(IDialogServices dialogServices, ISettingsServices settings)
+        public MainWindowViewModel(IDialogServices dialogServices, ISettingsServices settings, IComicLibraryService library)
         {
             _dialogServices = dialogServices;
             _settings = settings;
 
             _selectedFolder = _settings.Settings.ComicFolders.FirstOrDefault();
+            _library = library;
         }
 
         [RelayCommand]
@@ -48,7 +51,23 @@ namespace ComicSort.UI.ViewModels
         [RelayCommand]
         private async Task Scan()
         {
+            ErrorMessage = null;
 
+            var progress = new Progress<int>(value =>
+            {
+                // Bind this to a progress bar if needed
+                
+            });
+
+            try
+            {
+                int added = await _library.ScanAndSaveAsync(progress);
+                
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
         }
     }
 }

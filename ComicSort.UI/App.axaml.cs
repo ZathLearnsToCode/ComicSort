@@ -1,9 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using ComicSort.Core.Services;
+using ComicSort.Core.Services.Repositories;
+using ComicSort.Data.Repositories;
 using ComicSort.Data.SQL;
 using ComicSort.UI.Services;
 using ComicSort.UI.ViewModels;
@@ -34,7 +35,9 @@ namespace ComicSort.UI
 
                     services.AddSingleton<IDialogServices, DialogServices>();
                     services.AddSingleton<ISettingsServices, SettingsServices>();
-                    services.AddSingleton<IComicScanner, ComicScanner>();
+                    services.AddScoped<IComicScanner, ComicScanner>();
+                    services.AddScoped<IComicRepository, ComicRepository>();
+                    services.AddScoped<IComicLibraryService, ComicLibraryService>();
 
                     // Register ViewModels
                     services.AddTransient<MainWindowViewModel>();
@@ -81,7 +84,7 @@ namespace ComicSort.UI
         private void ConfigureDatabase(IServiceCollection services)
         {
             string dbFolder = Path.Combine(
-                                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                                     "ComicSort");
 
             Directory.CreateDirectory(dbFolder);

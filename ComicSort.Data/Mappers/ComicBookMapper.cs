@@ -1,15 +1,16 @@
-﻿using ComicSort.Data.Entities;
+﻿using ComicSort.Core.DTO;
+using ComicSort.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ComicSort.Core.Mappers
+namespace ComicSort.Data.Mappers
 {
     public static class ComicBookMapper
     {
-        public static DTO.ComicBookDTO ToDTO(this ComicBookEntity entity)
+        public static ComicBookDTO ToDTO(this ComicBookEntity entity)
         {
-            return new DTO.ComicBookDTO
+            return new ComicBookDTO
             {
                 Id = entity.Id,
                 FilePath =  entity.FilePath,
@@ -20,7 +21,7 @@ namespace ComicSort.Core.Mappers
             };
         }
 
-        public static ComicBookEntity ToEntity(this DTO.ComicBookDTO dto)
+        public static ComicBookEntity ToEntity(this ComicBookDTO dto)
         {
             return new ComicBookEntity
             {
