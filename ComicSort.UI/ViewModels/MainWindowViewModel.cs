@@ -69,5 +69,11 @@ namespace ComicSort.UI.ViewModels
                 ErrorMessage = ex.Message;
             }
         }
+
+        [RelayCommand]
+        private void NewProfile()
+        {
+            _dialogServices.ShowProfileDialog();
+        }
     }
 }

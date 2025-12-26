@@ -41,9 +41,11 @@ namespace ComicSort.UI
 
                     // Register ViewModels
                     services.AddTransient<MainWindowViewModel>();
+                    services.AddTransient<ProfileDialogViewModel>();
 
                     // Register Windows
                     services.AddTransient<MainWindow>();
+                    services.AddTransient<ProfileDialog>();
                 })
                 .Build();
 

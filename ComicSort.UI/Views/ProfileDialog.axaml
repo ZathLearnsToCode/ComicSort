@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ComicSort.UI.ProfileDialog"
+		xmlns:vm="using:ComicSort.UI.ViewModels"
+		x:DataType="vm:ProfileDialogViewModel"
+        Title="Create a new profile"
+		Width="500"
+        Height="450"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        ShowInTaskbar="False">
+  
+  
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+	  <vm:ProfileDialogViewModel/>
+  </Design.DataContext>
+
+	<StackPanel Orientation="Vertical" Margin="20" Spacing="15">
+		<TextBlock Text="Create a new profile" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+		<StackPanel Spacing="10">
+			<TextBlock Text="Profile Name:" FontWeight="Bold" />
+			<TextBox Text="" Padding="8" />
+		</StackPanel>
+
+		<StackPanel Spacing="10">
+			<TextBlock Text="Select Database Type:" FontWeight="Bold" />
+			<ComboBox SelectedItem=""
+                      Margin="0,5,0,0">
+				
+			</ComboBox>
+		</StackPanel>
+
+		<StackPanel Spacing="10">
+			<TextBlock Text="Database Location:" FontWeight="Bold" />
+			<Grid ColumnDefinitions="*,Auto">
+				<TextBox Grid.Column="0" Text="" IsReadOnly="True" Padding="8" />
+				<Button Grid.Column="1" Content="Browse..." Command="" Margin="8,0,0,0" Padding="12,8" />
+			</Grid>
+		</StackPanel>
+
+		<StackPanel Spacing="10" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+			<Button Content="Cancel" Width="100" Command="" />
+			<Button Content="OK" Width="100" Command="{Binding OkButtonCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+		</StackPanel>
+	
+	</StackPanel>
+</Window>

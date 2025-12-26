@@ -2,6 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using ComicSort.UI.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,13 @@ namespace ComicSort.UI.Services
 {
     public class DialogServices : IDialogServices
     {
+        private readonly IServiceProvider _serviceProvider;
+
+        public DialogServices(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
         private static Window? GetActiveWindow()
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -51,6 +60,18 @@ namespace ComicSort.UI.Services
             });
 
             return folder?.FirstOrDefault()?.TryGetLocalPath();
+        }
+
+        public void ShowProfileDialog()
+        {
+            var window = GetActiveWindow();
+            if (window is null)
+                return;
+
+            var dialog = _serviceProvider.GetRequiredService<ProfileDialog>();
+            dialog.DataContext = _serviceProvider.GetRequiredService<ProfileDialogViewModel>();
+            dialog.ShowDialog(window);
+
         }
     }
 }

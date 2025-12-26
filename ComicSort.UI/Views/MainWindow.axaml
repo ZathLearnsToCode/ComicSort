@@ -22,6 +22,7 @@
 			<TextBlock Text="{Binding ErrorMessage}"
            Foreground="Red"
            Margin="0,8,0,0"/>
+			<Button Content="Create  New Profile" Command="{Binding NewProfileCommand}"/>
 		</StackPanel>
 
 		<TextBlock Grid.Row="1" Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
