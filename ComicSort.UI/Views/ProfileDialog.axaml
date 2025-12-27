@@ -25,12 +25,12 @@
 
 		<StackPanel Spacing="10">
 			<TextBlock Text="Profile Name:" FontWeight="Bold" />
-			<TextBox Text="" Padding="8" />
+			<TextBox Text="{Binding ProfileName}" Padding="8" />
 		</StackPanel>
 
 		<StackPanel Spacing="10">
 			<TextBlock Text="Select Database Type:" FontWeight="Bold" />
-			<ComboBox SelectedItem=""
+			<ComboBox ItemsSource="{Binding StorageTypes}"  SelectedItem="{Binding SelectedStorageType}"
                       Margin="0,5,0,0">
 				
 			</ComboBox>
@@ -39,8 +39,8 @@
 		<StackPanel Spacing="10">
 			<TextBlock Text="Database Location:" FontWeight="Bold" />
 			<Grid ColumnDefinitions="*,Auto">
-				<TextBox Grid.Column="0" Text="" IsReadOnly="True" Padding="8" />
-				<Button Grid.Column="1" Content="Browse..." Command="" Margin="8,0,0,0" Padding="12,8" />
+				<TextBox Grid.Column="0" Text="{Binding SelectedPath}" IsReadOnly="True" Padding="8" />
+				<Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseButtonCommand}" Margin="8,0,0,0" Padding="12,8" />
 			</Grid>
 		</StackPanel>
 
