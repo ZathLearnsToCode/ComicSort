@@ -17,5 +17,7 @@ namespace ComicSort.Data.Entities
         public DateTime CreationDate { get; set; }
 
         public DateTime ModifiedDate { get; set; }
+
+        public ComicInfoEntity? ComicInfo { get; set; }
     }
 }
