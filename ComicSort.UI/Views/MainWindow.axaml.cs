@@ -13,5 +13,14 @@ namespace ComicSort.UI.Views
         {
             InitializeComponent();
         }
+
+        private void ResultsGrid_OnLoadingRow(object? sender, DataGridRowEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (e.Row.DataContext is ComicItemViewModel rowVm)
+                vm.RequestThumbnailForRow(rowVm);
+        }
     }
 }

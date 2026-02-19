@@ -86,16 +86,36 @@
       <!-- Left: results grid -->
       <Border Grid.Column="0" BorderThickness="1" BorderBrush="Blue" Padding="8">
         <DataGrid ItemsSource="{Binding Items}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  SelectedItem="{Binding SelectedBook, Mode=TwoWay}">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Name" Binding="{Binding FileName}" Width="2*"/>
-            <DataGridTextColumn Header="Ext" Binding="{Binding Extension}" Width="Auto"/>
-            <DataGridTextColumn Header="Size" Binding="{Binding FileSize}" Width="Auto"/>
-            <DataGridTextColumn Header="Path" Binding="{Binding FilePath}" Width="3*"/>
-          </DataGrid.Columns>
-        </DataGrid>
+          AutoGenerateColumns="False"
+          IsReadOnly="True"
+          LoadingRow="ResultsGrid_OnLoadingRow"
+          SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+
+  <DataGrid.Columns>
+
+    <!-- Thumbnail column -->
+    <DataGridTemplateColumn Header="" Width="72">
+      <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+          <Border Width="64" Height="56"
+                  CornerRadius="6"
+                  BorderThickness="1"
+                  BorderBrush="Gray">
+            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill"/>
+          </Border>
+        </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+
+    <!-- Existing columns -->
+    <DataGridTextColumn Header="Name" Binding="{Binding Book.FileName}" Width="2*"/>
+    <DataGridTextColumn Header="Ext" Binding="{Binding Book.Extension}" Width="Auto"/>
+    <DataGridTextColumn Header="Size" Binding="{Binding Book.FileSize}" Width="Auto"/>
+    <DataGridTextColumn Header="Path" Binding="{Binding Book.FilePath}" Width="3*"/>
+
+  </DataGrid.Columns>
+</DataGrid>
+
       </Border>
 
       <!-- Right: details panel -->
@@ -104,10 +124,9 @@
           <TextBlock Text="Details" FontSize="18" FontWeight="Bold"/>
 
           <Border Height="220" CornerRadius="8" BorderThickness="1" BorderBrush="Gray">
-            <TextBlock Text="(cover later)"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+                <Image Source="{Binding SelectedCover}" Stretch="Uniform"/>
           </Border>
+
 
           <TextBlock Text="{Binding SelectedBook.FileName, FallbackValue=Select a book to see details.}"
                      FontSize="16" FontWeight="SemiBold" />

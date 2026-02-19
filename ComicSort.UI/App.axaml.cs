@@ -10,13 +10,13 @@ using ComicSort.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace ComicSort.UI
 {
     public partial class App : Application
     {
         public static IHost AppHost { get; private set; } = null!;
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -27,28 +27,48 @@ namespace ComicSort.UI
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    
-                    services.AddSingleton<MainWindowViewModel>();
-                    services.AddSingleton<MainWindow>();
+
+                    // Engine thumbnail services
+                    services.AddSingleton<CoverStreamService>();
+                    services.AddSingleton<ThumbnailGenerator>();
+
+                    // UI thumbnail service
+                    services.AddSingleton<IThumbnailService, ThumbnailService>();
+                    // UI services
                     services.AddSingleton<IDialogServices, DialogServices>();
-                    services.AddHostedService<StartupService>();
+
+                    // Engine/services (singletons)
                     services.AddSingleton<LibraryService>();
                     services.AddSingleton<LibraryIndex>();
                     services.AddSingleton<SearchEngine>();
+
+                    // ScanQueueService MUST share the singleton LibraryService
+                    // and use the same library path as before.
+                    services.AddSingleton<ScanQueueService>(sp =>
+                    {
+                        var library = sp.GetRequiredService<LibraryService>();
+                        var libraryPath = AppPaths.GetLibraryJsonPath();
+                        return new ScanQueueService(library, libraryPath);
+                    });
+
+                    // VM + Window
+                    services.AddSingleton<MainWindowViewModel>();
+                    services.AddSingleton<MainWindow>();
+
+                    // Startup (calls InitializeAsync somewhere in your StartupService)
+                    services.AddHostedService<StartupService>();
                 })
                 .Build();
 
-
-
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-                // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 DisableAvaloniaDataAnnotationValidation();
+
                 var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = AppHost.Services.GetRequiredService<MainWindowViewModel>();
 
                 desktop.MainWindow = mainWindow;
+
                 desktop.Exit += async (_, __) =>
                 {
                     if (AppHost is not null)
@@ -58,7 +78,7 @@ namespace ComicSort.UI
                     }
                 };
 
-                _ = AppHost.StartAsync(); // <-- THIS is what people miss
+                _ = AppHost.StartAsync();
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -66,11 +86,9 @@ namespace ComicSort.UI
 
         private void DisableAvaloniaDataAnnotationValidation()
         {
-            // Get an array of plugins to remove
             var dataValidationPluginsToRemove =
                 BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-            // remove each entry found
             foreach (var plugin in dataValidationPluginsToRemove)
             {
                 BindingPlugins.DataValidators.Remove(plugin);

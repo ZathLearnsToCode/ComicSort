@@ -13,6 +13,17 @@ namespace ComicSort.UI.UI_Services
             var root = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var folder = Path.Combine(root, "ComicSort-Test");
             return Path.Combine(folder, "library.json");
+
+
         }
+
+        public static string GetThumbCacheFolder()
+        {
+            var root = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var folder = Path.Combine(root, "ComicSort-Test", "thumbs");
+            Directory.CreateDirectory(folder);
+            return folder;
+        }
+
     }
 }
