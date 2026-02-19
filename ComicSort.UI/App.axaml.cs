@@ -3,11 +3,14 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using ComicSort.Engine.Services;
+using ComicSort.UI.UI_Services;
 using ComicSort.UI.ViewModels;
 using ComicSort.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace ComicSort.UI
 {
@@ -21,15 +24,21 @@ namespace ComicSort.UI
 
         public override void OnFrameworkInitializationCompleted()
         {
-
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddTransient<MainWindowViewModel>();
-                    services.AddTransient<MainWindow>();
-
+                    
+                    services.AddSingleton<MainWindowViewModel>();
+                    services.AddSingleton<MainWindow>();
+                    services.AddSingleton<IDialogServices, DialogServices>();
+                    services.AddHostedService<StartupService>();
+                    services.AddSingleton<LibraryService>();
+                    services.AddSingleton<LibraryIndex>();
+                    services.AddSingleton<SearchEngine>();
                 })
                 .Build();
+
+
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -40,6 +49,16 @@ namespace ComicSort.UI
                 mainWindow.DataContext = AppHost.Services.GetRequiredService<MainWindowViewModel>();
 
                 desktop.MainWindow = mainWindow;
+                desktop.Exit += async (_, __) =>
+                {
+                    if (AppHost is not null)
+                    {
+                        await AppHost.StopAsync();
+                        AppHost.Dispose();
+                    }
+                };
+
+                _ = AppHost.StartAsync(); // <-- THIS is what people miss
             }
 
             base.OnFrameworkInitializationCompleted();

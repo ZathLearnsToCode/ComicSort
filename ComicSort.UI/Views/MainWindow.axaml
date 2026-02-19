@@ -3,18 +3,126 @@
         xmlns:vm="using:ComicSort.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
         x:Class="ComicSort.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="ComicSort">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
 
-    
+  <DockPanel>
 
+    <!-- Top controls / status -->
+    <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Spacing="8" Margin="8">
+
+      <!-- Row 1: Actions + status -->
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Add Folder"
+                Command="{Binding AddFolderCommand}"
+                IsEnabled="{Binding !IsScanning}" />
+
+        <Button Content="Cancel" Command="{Binding CancelCommand}" />
+        <Button Content="Clear Queue" Command="{Binding ClearQueueCommand}" />
+
+        <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Row 2: Search + filter + sort + results -->
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBox Width="420"
+                 Watermark="Search (name or path)…"
+                 Text="{Binding Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <ComboBox Width="110"
+                  SelectedItem="{Binding ExtensionFilter, Mode=TwoWay}"
+                  ItemsSource="{Binding ExtensionOptions}" />
+
+        <ComboBox Width="140"
+                  SelectedItem="{Binding SortMode, Mode=TwoWay}"
+                  ItemsSource="{Binding SortOptions}" />
+
+        <CheckBox Content="Descending" IsChecked="{Binding SortDescending}" />
+
+        <TextBlock Text="{Binding ResultsCount, StringFormat=Results: {0}}"
+                   VerticalAlignment="Center"/>
+
+        <TextBlock Text="Searching..."
+                   IsVisible="{Binding IsSearching}"
+                   VerticalAlignment="Center"/>
+
+        <!-- Always show ms (simpler than negating IsSearching in XAML) -->
+        <TextBlock Text="{Binding LastSearchMs, StringFormat={}{0} ms}"
+                   VerticalAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Row 3: Scan progress -->
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Text="Processed:"/>
+        <TextBlock Text="{Binding ScanProcessed}"/>
+
+        <TextBlock Text="Added:"/>
+        <TextBlock Text="{Binding ScanAdded}"/>
+
+        <TextBlock Text="{Binding ScanQueueCount, StringFormat=Queue: {0}}"
+                   Margin="16,0,0,0"/>
+
+        <TextBlock Text="{Binding ScanCurrentFolder}"
+                   Margin="8,0,0,0"/>
+      </StackPanel>
+
+      <!-- Row 4: Current file -->
+      <TextBlock Text="{Binding ScanCurrentFile}"
+                 TextTrimming="CharacterEllipsis"
+                 MaxWidth="1000"/>
+
+    </StackPanel>
+
+    <!-- Main area: results + details -->
+    <Grid ColumnDefinitions="3*,2*" Margin="8">
+
+      <!-- Left: results grid -->
+      <Border Grid.Column="0" BorderThickness="1" BorderBrush="Blue" Padding="8">
+        <DataGrid ItemsSource="{Binding Items}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding SelectedBook, Mode=TwoWay}">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding FileName}" Width="2*"/>
+            <DataGridTextColumn Header="Ext" Binding="{Binding Extension}" Width="Auto"/>
+            <DataGridTextColumn Header="Size" Binding="{Binding FileSize}" Width="Auto"/>
+            <DataGridTextColumn Header="Path" Binding="{Binding FilePath}" Width="3*"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <!-- Right: details panel -->
+      <Border Grid.Column="1" BorderThickness="1" BorderBrush="Gray" Padding="12" Margin="8,0,0,0">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Details" FontSize="18" FontWeight="Bold"/>
+
+          <Border Height="220" CornerRadius="8" BorderThickness="1" BorderBrush="Gray">
+            <TextBlock Text="(cover later)"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </Border>
+
+          <TextBlock Text="{Binding SelectedBook.FileName, FallbackValue=Select a book to see details.}"
+                     FontSize="16" FontWeight="SemiBold" />
+
+          <TextBlock Text="{Binding SelectedBook.Extension, StringFormat=Ext: {0}, FallbackValue=Ext: -}"/>
+          <TextBlock Text="{Binding SelectedBook.FileSize, StringFormat=Size: {0}, FallbackValue=Size: -}"/>
+          <TextBlock Text="{Binding SelectedBook.AddedOn, StringFormat=Added: {0:u}, FallbackValue=Added: -}"/>
+
+          <TextBlock Text="Path:" FontWeight="Bold" Margin="0,6,0,0"/>
+          <TextBox Text="{Binding SelectedBook.FilePath}"
+         IsReadOnly="True" TextWrapping="Wrap" MinHeight="90"/>
+        </StackPanel>
+      </Border>
+
+    </Grid>
+
+  </DockPanel>
 </Window>
