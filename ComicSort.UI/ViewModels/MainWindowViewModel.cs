@@ -22,6 +22,17 @@ namespace ComicSort.UI.ViewModels
         private readonly LibraryIndex _index;
         private readonly IDialogServices _dialogServices;
         private readonly IThumbnailService _thumbnails;
+        private readonly IComicMetadataExtractor _metadata;
+        private readonly ILibrarySaveScheduler _saveScheduler;
+        private readonly IFileHashService _hashes;
+
+        public string SelectedSeries => SelectedBook?.Metadata?.Series ?? "-";
+        public string SelectedIssue => SelectedBook?.Metadata?.Number ?? "-";
+        public string SelectedTitle => SelectedBook?.Metadata?.Title ?? "-";
+        public string SelectedYear => SelectedBook?.Metadata?.Year?.ToString() ?? "-";
+        public string SelectedSummary => SelectedBook?.Metadata?.Summary ?? "-";
+        public string SelectedHash => SelectedBook?.FileHash ?? "-";
+        public string SelectedHashAlgo => SelectedBook?.FileHashAlgorithm ?? "-";
 
         private readonly SearchController<ComicBook[]> _searchController;
 
@@ -102,7 +113,10 @@ namespace ComicSort.UI.ViewModels
             LibraryIndex index,
             SearchEngine searchEngine,
             ScanQueueService scanQueue,
-            IThumbnailService thumbnails)
+            IThumbnailService thumbnails,
+            IComicMetadataExtractor metadata,
+            ILibrarySaveScheduler saveScheduler,
+            IFileHashService hashes)
         {
             _dialogServices = dialogServices;
             _library = library;
@@ -110,6 +124,8 @@ namespace ComicSort.UI.ViewModels
             _searchEngine = searchEngine;
             _scanQueue = scanQueue;
             _thumbnails = thumbnails;
+            _metadata = metadata;
+            _saveScheduler = saveScheduler;
 
             _libraryPath = AppPaths.GetLibraryJsonPath();
 
@@ -185,7 +201,7 @@ namespace ComicSort.UI.ViewModels
                 Dispatcher.UIThread.Post(() => StatusText = $"Error: {ex.Message}");
 
             _scanQueue.Start();
-            
+            _hashes = hashes;
         }
 
         // ======== Startup ========
@@ -305,6 +321,7 @@ namespace ComicSort.UI.ViewModels
             _selectedCoverCts = new CancellationTokenSource();
             var ct = _selectedCoverCts.Token;
 
+            // Cover load (existing)
             _ = Task.Run(async () =>
             {
                 try
@@ -320,6 +337,97 @@ namespace ComicSort.UI.ViewModels
                 catch (OperationCanceledException) { }
                 catch { /* ignore for now */ }
             }, ct);
+
+            // ✅ Metadata load (add this)
+            // Reset metadata text immediately (shows "-" while loading / if missing)
+            RaiseSelectedMetadata();
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // If already extracted, just refresh bindings
+                    if (value.Book.Metadata is not null)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(RaiseSelectedMetadata);
+                        return;
+                    }
+
+                    var md = await _metadata.TryExtractAsync(value.Book.FilePath, ct);
+
+                    if (md is null)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(RaiseSelectedMetadata);
+                        return;
+                    }
+
+                    value.Book.Metadata = md;
+                    value.Book.MetadataUpdatedOnUtc = DateTime.UtcNow;
+
+                    _saveScheduler.RequestSave();
+
+
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        // refresh SelectedBook + derived metadata strings
+                        OnPropertyChanged(nameof(SelectedBook));
+                        RaiseSelectedMetadata();
+                    });
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                        StatusText = $"Metadata error: {ex.Message}");
+                }
+            }, ct);
+
+            // Reset hash text immediately
+            RaiseSelectedHash();
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // Already hashed?
+                    if (!string.IsNullOrWhiteSpace(value.Book.FileHash))
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(RaiseSelectedHash);
+                        return;
+                    }
+
+                    var hex = await _hashes.ComputeXxHash64HexAsync(value.Book.FilePath, ct);
+
+                    value.Book.FileHash = hex;
+                    value.Book.FileHashAlgorithm = "xxHash64";
+                    value.Book.FileHashUpdatedOnUtc = DateTime.UtcNow;
+
+                    // Persist (debounced)
+                    _saveScheduler.RequestSave();
+
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        OnPropertyChanged(nameof(SelectedBook));
+                        RaiseSelectedHash();
+                    });
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                        StatusText = $"Hash error: {ex.Message}");
+                }
+            }, ct);
+
+        }
+
+        private void RaiseSelectedMetadata()
+        {
+            OnPropertyChanged(nameof(SelectedSeries));
+            OnPropertyChanged(nameof(SelectedIssue));
+            OnPropertyChanged(nameof(SelectedTitle));
+            OnPropertyChanged(nameof(SelectedYear));
+            OnPropertyChanged(nameof(SelectedSummary));
         }
 
 
@@ -346,6 +454,12 @@ namespace ComicSort.UI.ViewModels
                     // ignore thumb failures for now
                 }
             });
+        }
+
+        private void RaiseSelectedHash()
+        {
+            OnPropertyChanged(nameof(SelectedHash));
+            OnPropertyChanged(nameof(SelectedHashAlgo));
         }
 
 

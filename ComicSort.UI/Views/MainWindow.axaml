@@ -113,6 +113,7 @@
     <DataGridTextColumn Header="Size" Binding="{Binding Book.FileSize}" Width="Auto"/>
     <DataGridTextColumn Header="Path" Binding="{Binding Book.FilePath}" Width="3*"/>
 
+
   </DataGrid.Columns>
 </DataGrid>
 
@@ -134,6 +135,15 @@
           <TextBlock Text="{Binding SelectedBook.Extension, StringFormat=Ext: {0}, FallbackValue=Ext: -}"/>
           <TextBlock Text="{Binding SelectedBook.FileSize, StringFormat=Size: {0}, FallbackValue=Size: -}"/>
           <TextBlock Text="{Binding SelectedBook.AddedOn, StringFormat=Added: {0:u}, FallbackValue=Added: -}"/>
+            <TextBlock Text="{Binding SelectedSeries, StringFormat=Series: {0}}"/>
+<TextBlock Text="{Binding SelectedIssue, StringFormat=Issue: {0}}"/>
+<TextBlock Text="{Binding SelectedTitle, StringFormat=Title: {0}}"/>
+<TextBlock Text="{Binding SelectedYear, StringFormat=Year: {0}}"/>
+<TextBlock Text="{Binding SelectedSummary, StringFormat=Summary: {0}}"
+           TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding SelectedHashAlgo, StringFormat=Hash Algo: {0}}"/>
+<TextBlock Text="{Binding SelectedHash, StringFormat=Hash: {0}}"
+           TextWrapping="Wrap"/>
 
           <TextBlock Text="Path:" FontWeight="Bold" Margin="0,6,0,0"/>
           <TextBox Text="{Binding SelectedBook.FilePath}"

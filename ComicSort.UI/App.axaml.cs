@@ -27,6 +27,9 @@ namespace ComicSort.UI
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    services.AddSingleton<IComicMetadataExtractor, ComicInfoMetadataExtractor>();
+                    services.AddSingleton<ILibrarySaveScheduler, LibrarySaveScheduler>();
+                    services.AddSingleton<IFileHashService, FileHashService>();
 
                     // Engine thumbnail services
                     services.AddSingleton<CoverStreamService>();
