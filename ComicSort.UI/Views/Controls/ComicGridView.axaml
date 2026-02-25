@@ -1,0 +1,170 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             xmlns:model="using:ComicSort.UI.Models"
+             x:Class="ComicSort.UI.Views.Controls.ComicGridView"
+             x:DataType="vm:ComicGridViewModel">
+
+    <Border Background="#F6F8FD"
+            BorderBrush="#D5DCE8"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="8">
+        <Grid>
+            <ListBox ItemsSource="{Binding Items}"
+                     IsVisible="{Binding IsFlatView}"
+                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                     SelectionMode="Single"
+                     BorderThickness="0"
+                     Background="Transparent">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Margin" Value="2" />
+                        <Setter Property="Padding" Value="2" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover">
+                        <Setter Property="Background" Value="#E7EDF9" />
+                        <Setter Property="BorderBrush" Value="#BDCAE1" />
+                    </Style>
+                    <Style Selector="ListBoxItem:selected">
+                        <Setter Property="Background" Value="#DCE7FA" />
+                        <Setter Property="BorderBrush" Value="#8BA5D6" />
+                    </Style>
+                </ListBox.Styles>
+
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"
+                                   ItemWidth="100"
+                                   ItemHeight="190" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="model:ComicTileModel">
+                        <StackPanel Width="92"
+                                    Margin="4"
+                                    Spacing="4">
+                            <Border Height="132"
+                                    CornerRadius="4"
+                                    BorderThickness="1"
+                                    BorderBrush="#263348"
+                                    Background="#1C2738">
+                                <Grid>
+                                    <Image Stretch="Fill"
+                                           Source="{Binding ThumbnailImage}" />
+                                    <Border HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Margin="4"
+                                            Background="#101927"
+                                            CornerRadius="3"
+                                            Padding="4,1">
+                                        <TextBlock Text="{Binding FileTypeTag}"
+                                                   FontSize="10"
+                                                   Foreground="White" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            <TextBlock Text="{Binding DisplayTitle}"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Foreground="#1E2A3B" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <ScrollViewer IsVisible="{Binding IsGroupedView}"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="model:ComicGroupModel">
+                            <Expander IsExpanded="{Binding IsExpanded}"
+                                      Margin="0,0,0,8"
+                                      Background="Transparent"
+                                      HorizontalAlignment="Stretch">
+                                <Expander.Header>
+                                    <TextBlock Text="{Binding Header}"
+                                               FontSize="16"
+                                               Foreground="#20348C"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap" />
+                                </Expander.Header>
+                                <ListBox ItemsSource="{Binding Items}"
+                                         SelectionMode="Single"
+                                         SelectionChanged="GroupedListBox_OnSelectionChanged"
+                                         BorderThickness="0"
+                                         Background="Transparent">
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Margin" Value="2" />
+                                            <Setter Property="Padding" Value="2" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem:pointerover">
+                                            <Setter Property="Background" Value="#E7EDF9" />
+                                            <Setter Property="BorderBrush" Value="#BDCAE1" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem:selected">
+                                            <Setter Property="Background" Value="#DCE7FA" />
+                                            <Setter Property="BorderBrush" Value="#8BA5D6" />
+                                        </Style>
+                                    </ListBox.Styles>
+
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"
+                                                       ItemWidth="100"
+                                                       ItemHeight="190" />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="model:ComicTileModel">
+                                            <StackPanel Width="92"
+                                                        Margin="4"
+                                                        Spacing="4">
+                                                <Border Height="132"
+                                                        CornerRadius="4"
+                                                        BorderThickness="1"
+                                                        BorderBrush="#263348"
+                                                        Background="#1C2738">
+                                                    <Grid>
+                                                        <Image Stretch="Fill"
+                                                               Source="{Binding ThumbnailImage}" />
+                                                        <Border HorizontalAlignment="Left"
+                                                                VerticalAlignment="Top"
+                                                                Margin="4"
+                                                                Background="#101927"
+                                                                CornerRadius="3"
+                                                                Padding="4,1">
+                                                            <TextBlock Text="{Binding FileTypeTag}"
+                                                                       FontSize="10"
+                                                                       Foreground="White" />
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                                <TextBlock Text="{Binding DisplayTitle}"
+                                                           FontSize="11"
+                                                           TextWrapping="Wrap"
+                                                           TextAlignment="Center"
+                                                           Foreground="#1E2A3B" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

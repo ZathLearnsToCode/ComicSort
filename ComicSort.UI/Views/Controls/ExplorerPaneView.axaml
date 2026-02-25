@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             xmlns:model="using:ComicSort.UI.Models"
+             x:Class="ComicSort.UI.Views.Controls.ExplorerPaneView"
+             x:DataType="vm:ExplorerPaneViewModel">
+
+    <Border Background="#EEF2F8"
+            BorderBrush="#D5DCE8"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="6">
+        <Grid RowDefinitions="Auto,*" RowSpacing="6">
+            <ComboBox ItemsSource="{Binding PaneOptions}"
+                      SelectedItem="{Binding SelectedPaneOption, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch" />
+
+            <ListBox Grid.Row="1"
+                     ItemsSource="{Binding VisibleItems}"
+                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                     HorizontalAlignment="Stretch">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="model:NamedCountItemModel">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="2">
+                            <TextBlock Grid.Column="0" Text="{Binding Glyph}" Foreground="#627A9E" />
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="#6E7D95" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
+</UserControl>

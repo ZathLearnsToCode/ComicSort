@@ -1,0 +1,183 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             xmlns:models="using:ComicSort.UI.Models"
+             x:Class="ComicSort.UI.Views.Controls.SidebarView"
+             x:Name="Root"
+             x:DataType="vm:SidebarViewModel">
+    <Border Background="#3B5068" BorderBrush="#2C3E50" BorderThickness="0,0,1,0">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Background="#4A6580" Padding="10,8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding LibraryHeaderText}"
+                               Foreground="White"
+                               FontWeight="Bold"
+                               FontSize="14"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1"
+                            Content="&#x2699;"
+                            Foreground="White"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="4,2"
+                            Command="{Binding OpenLibrarySettingsCommand}" />
+                </Grid>
+            </Border>
+
+            <ScrollViewer>
+                <StackPanel>
+                    <ListBox ItemsSource="{Binding LibraryItems}"
+                             SelectedItem="{Binding SelectedSidebarItem, Mode=TwoWay}"
+                             Background="Transparent"
+                             Padding="0">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="10,5" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="FontSize" Value="12" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#5B7AA0" />
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:SidebarItem">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               Foreground="White"
+                                               VerticalAlignment="Center" />
+                                    <Border Grid.Column="1"
+                                            Background="#5B7AA0"
+                                            CornerRadius="8"
+                                            Padding="6,1"
+                                            IsVisible="{Binding HasCount}"
+                                            MinWidth="22"
+                                            HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Count}"
+                                                   Foreground="White"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Border Background="#4A6580" Padding="10,6" Margin="0,8,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="Smart Lists"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       FontSize="12"
+                                       VerticalAlignment="Center" />
+                            <Button Grid.Column="1"
+                                    Content="+"
+                                    Command="{Binding AddSmartListCommand}"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="6,0"
+                                    VerticalAlignment="Center"
+                                    ToolTip.Tip="Add new smart list" />
+                        </Grid>
+                    </Border>
+
+                    <TreeView ItemsSource="{Binding SmartListItems}"
+                              SelectedItem="{Binding SelectedSmartListItem, Mode=TwoWay}"
+                              Background="Transparent"
+                              Padding="0">
+                        <TreeView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="New Smart List" Command="{Binding AddSmartListCommand}" />
+                                <Separator />
+                                <MenuItem Header="Sort" Command="{Binding SortSmartListsCommand}" />
+                            </ContextMenu>
+                        </TreeView.ContextMenu>
+                        <TreeView.Styles>
+                            <Style Selector="TreeViewItem">
+                                <Setter Property="Padding" Value="10,5" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="FontSize" Value="12" />
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate x:DataType="models:SidebarItem"
+                                              ItemsSource="{Binding Children}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Grid.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Rename"
+                                                      Command="{Binding #Root.DataContext.RenameSmartListCommand}"
+                                                      CommandParameter="{Binding}"
+                                                      IsVisible="{Binding !IsHeader}" />
+                                            <MenuItem Header="Remove"
+                                                      Command="{Binding #Root.DataContext.RemoveSmartListCommand}"
+                                                      CommandParameter="{Binding}"
+                                                      IsVisible="{Binding !IsHeader}" />
+                                            <Separator IsVisible="{Binding !IsHeader}" />
+                                            <MenuItem Header="New Smart List"
+                                                      Command="{Binding #Root.DataContext.AddChildSmartListCommand}"
+                                                      CommandParameter="{Binding}" />
+                                            <Separator />
+                                            <MenuItem Header="Sort"
+                                                      Command="{Binding #Root.DataContext.SortSmartListsCommand}" />
+                                        </ContextMenu>
+                                    </Grid.ContextMenu>
+
+                                    <Border Grid.Column="0" Background="Transparent">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Name}"
+                                                       Foreground="White"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="Bold"
+                                                       IsVisible="{Binding IsHeader}" />
+
+                                            <Panel IsVisible="{Binding !IsHeader}">
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="White"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding !IsEditing}" />
+                                                <TextBox Text="{Binding Name, Mode=TwoWay}"
+                                                         IsVisible="{Binding IsEditing}"
+                                                         FontSize="12"
+                                                         Padding="2"
+                                                         MinWidth="80"
+                                                         VerticalAlignment="Center"
+                                                         Foreground="Black"
+                                                         Background="White"
+                                                         BorderBrush="#5B7AA0"
+                                                         BorderThickness="1"
+                                                         CornerRadius="2"
+                                                         LostFocus="SmartListTextBox_LostFocus"
+                                                         KeyDown="SmartListTextBox_KeyDown" />
+                                            </Panel>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Grid.Column="1"
+                                            Background="#5B7AA0"
+                                            CornerRadius="8"
+                                            Padding="6,1"
+                                            IsVisible="{Binding HasCount}"
+                                            MinWidth="22"
+                                            HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Count}"
+                                                   Foreground="White"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

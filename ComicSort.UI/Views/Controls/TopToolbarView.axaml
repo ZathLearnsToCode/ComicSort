@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             x:Class="ComicSort.UI.Views.Controls.TopToolbarView"
+             x:DataType="vm:TopToolbarViewModel">
+
+    <Border Background="#EEF2F8"
+            BorderBrush="#D5DCE8"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="8">
+        <Grid ColumnDefinitions="300,145,170,120,*,280" ColumnSpacing="25">
+            <Border Grid.Column="0"
+                    Background="#F8FAFD"
+                    BorderBrush="#D7DEEA"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="8,4">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"
+                               Text="⌕"
+                               FontSize="16"
+                               Foreground="#6B7892" />
+                    <TextBox Background="Transparent"
+                             BorderThickness="0"
+                             Watermark="Search..."
+                             Text="{Binding SearchText, Mode=TwoWay}" />
+                </DockPanel>
+            </Border>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Label Content="Group by : " Foreground="Black" VerticalAlignment="Center"/>
+                <Button x:Name="PrimaryFilterButton"
+                        VerticalAlignment="Center"
+                        Padding="10,4"
+                        MinWidth="170"
+                        HorizontalContentAlignment="Left"
+                        Content="{Binding PrimaryFilterMenuText}"
+                        Click="PrimaryFilterButton_OnClick">
+                    <Button.ContextMenu>
+                        <ContextMenu Placement="Bottom">
+                            <MenuItem Header="Not Grouped"
+                                      Tag="Not Grouped"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsNotGroupedSelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                            <Separator/>
+                            <MenuItem Header="Series"
+                                      Tag="Series"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsSeriesSelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                            <MenuItem Header="Publisher"
+                                      Tag="Publisher"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsPublisherSelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                            <MenuItem Header="Smart List"
+                                      Tag="Smart List"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsSmartListSelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                            <Separator />
+                            <MenuItem Header="File Directory"
+                                      Tag="File Directory"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsFileDirectorySelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                            <MenuItem Header="Folder"
+                                      Tag="Folder"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsFolderSelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                            <MenuItem Header="Import Source"
+                                      Tag="Import Source"
+                                      ToggleType="CheckBox"
+                                      IsChecked="{Binding IsImportSourceSelected}"
+                                      PointerPressed="PrimaryFilterMenuItem_OnPointerPressed"
+                                      Click="PrimaryFilterMenuItem_OnClick" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+            </StackPanel>
+            
+            
+
+            <Border Grid.Column="4" />
+
+            <DockPanel Grid.Column="5">
+                <TextBox DockPanel.Dock="Left"
+                         Width="180"
+                         Watermark="Search all..."
+                         Text="{Binding GlobalSearchText, Mode=TwoWay}" />
+                <Button Margin="8,0,0,0"
+                        Padding="12,6"
+                        Content="Search All" />
+            </DockPanel>
+        </Grid>
+    </Border>
+</UserControl>

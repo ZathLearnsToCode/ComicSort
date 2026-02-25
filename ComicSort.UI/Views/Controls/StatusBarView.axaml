@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             x:Class="ComicSort.UI.Views.Controls.StatusBarView"
+             x:DataType="vm:StatusBarViewModel">
+
+    <Border Background="#EEF2F8"
+            BorderBrush="#D5DCE8"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="8,4">
+        <Grid ColumnDefinitions="240,*,Auto,Auto,Auto,Auto" ColumnSpacing="12">
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="{Binding LibrarySummary}"
+                       Foreground="#2D3A4F" />
+            <TextBlock Grid.Column="1"
+                       VerticalAlignment="Center"
+                       Text="{Binding SelectedFile}"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="#2D3A4F" />
+            <TextBlock Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Text="{Binding TransferSummary}"
+                       Foreground="#2D3A4F" />
+            <TextBlock Grid.Column="3"
+                       VerticalAlignment="Center"
+                       Text="{Binding RatioSummary}"
+                       Foreground="#2D3A4F" />
+            <TextBlock Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="{Binding IssueSummary}"
+                       Foreground="#2D3A4F" />
+            <TextBlock Grid.Column="5"
+                       VerticalAlignment="Center"
+                       Text="{Binding YearSummary}"
+                       Foreground="#2D3A4F" />
+        </Grid>
+    </Border>
+</UserControl>

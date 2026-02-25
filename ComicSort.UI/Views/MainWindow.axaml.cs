@@ -1,9 +1,6 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
 using ComicSort.UI.ViewModels;
-using System.Linq;
-
+using System.Threading.Tasks;
 
 namespace ComicSort.UI.Views
 {
@@ -12,15 +9,24 @@ namespace ComicSort.UI.Views
         public MainWindow()
         {
             InitializeComponent();
+            Opened += OnOpened;
         }
 
-        private void ResultsGrid_OnLoadingRow(object? sender, DataGridRowEventArgs e)
+        private async void OnOpened(object? sender, System.EventArgs e)
         {
-            if (DataContext is not MainWindowViewModel vm)
-                return;
-
-            if (e.Row.DataContext is ComicItemViewModel rowVm)
-                vm.RequestThumbnailForRow(rowVm);
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                try
+                {
+                    await viewModel.ComicGrid.InitializeAsync();
+                    await Task.Delay(400);
+                    await viewModel.ComicGrid.ReloadAsync();
+                }
+                catch
+                {
+                    // Keep window responsive even if initial library load fails.
+                }
+            }
         }
     }
 }

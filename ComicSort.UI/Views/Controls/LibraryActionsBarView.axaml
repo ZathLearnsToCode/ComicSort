@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             x:Class="ComicSort.UI.Views.Controls.LibraryActionsBarView"
+             x:DataType="vm:LibraryActionsBarViewModel">
+
+    <Border Background="LightGray"
+            BorderBrush="#D5DCE8"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="8">
+        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
+              ColumnSpacing="8">
+            <Button Grid.Column="0"
+                    Content="{Binding AddFolderButtonText}"
+                    Command="{Binding AddFolderToLibraryCommand}"
+                    IsEnabled="{Binding AddFolderEnabled}"
+                    Padding="14,6"
+                    Foreground="White"
+                    Background="DarkGray"/>
+
+            <Button Grid.Column="1"
+                    Content="{Binding ScanLibraryButtonText}"
+                    Command="{Binding ScanLibraryCommand}"
+                    IsEnabled="{Binding ScanLibraryEnabled}"
+                    Padding="14,6"
+                    Foreground="White"
+                    Background="DarkGray"/>
+
+            <Button Grid.Column="2"
+                    Content="{Binding CancelScanButtonText}"
+                    Command="{Binding CancelScanCommand}"
+                    IsEnabled="{Binding IsScanRunning}"
+                    Padding="14,6"
+                    Foreground="White"
+                    Background="#9B4B4B"/>
+
+            <TextBlock Grid.Column="3"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"
+                       Text="{Binding StatusText}"
+                       Foreground="#5A6B86" />
+
+            <Button Grid.Column="4"
+                    Command="{Binding OpenSettingsCommand}"
+                    Padding="12,6"
+                    Foreground="White"
+                    Background="DarkGray">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="&#x2699;" />
+                    <TextBlock Text="{Binding SettingsButtonText}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

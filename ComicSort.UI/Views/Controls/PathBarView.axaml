@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
+             x:Class="ComicSort.UI.Views.Controls.PathBarView"
+             x:DataType="vm:PathBarViewModel">
+
+    <Border Background="#F4F7FC"
+            BorderBrush="#D5DCE8"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="8,4">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Text="{Binding CurrentPath}"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="#30405A" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding PageSummary}"
+                       VerticalAlignment="Center"
+                       Foreground="#6E7D95" />
+        </Grid>
+    </Border>
+</UserControl>

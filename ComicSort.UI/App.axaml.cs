@@ -4,19 +4,21 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using ComicSort.Engine.Services;
-using ComicSort.UI.UI_Services;
+using ComicSort.UI.Services;
 using ComicSort.UI.ViewModels;
+using ComicSort.UI.ViewModels.Controls;
 using ComicSort.UI.Views;
+using ComicSort.UI.Views.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ComicSort.UI
 {
     public partial class App : Application
     {
-        public static IHost AppHost { get; private set; } = null!;
-
+        public static IHost? AppHost { get; private set; }
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -27,48 +29,44 @@ namespace ComicSort.UI
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddSingleton<IComicMetadataExtractor, ComicInfoMetadataExtractor>();
-                    services.AddSingleton<ILibrarySaveScheduler, LibrarySaveScheduler>();
-                    services.AddSingleton<IFileHashService, FileHashService>();
+                    services.AddSingleton<IDialogService, DialogService>();
+                    services.AddSingleton<ISettingsService, SettingsService>();
+                    services.AddSingleton<IComicDbContextFactory, ComicDbContextFactory>();
+                    services.AddSingleton<IComicDatabaseService, ComicDatabaseService>();
+                    services.AddSingleton<IScanRepository, ScanRepository>();
+                    services.AddSingleton<IArchiveImageService, SevenZipArchiveImageService>();
+                    services.AddSingleton<IThumbnailCacheService, ThumbnailCacheService>();
+                    services.AddSingleton<IScanService, ScanService>();
+                    services.AddSingleton<IComicRackImportService, ComicRackImportService>();
 
-                    // Engine thumbnail services
-                    services.AddSingleton<CoverStreamService>();
-                    services.AddSingleton<ThumbnailGenerator>();
 
-                    // UI thumbnail service
-                    services.AddSingleton<IThumbnailService, ThumbnailService>();
-                    // UI services
-                    services.AddSingleton<IDialogServices, DialogServices>();
+                    services.AddTransient<MainWindowViewModel>();
+                    services.AddTransient<MainWindow>();
+                    services.AddSingleton<LibraryActionsBarViewModel>();
+                    services.AddSingleton<ComicGridViewModel>();
+                    services.AddSingleton<SidebarViewModel>();
+                    services.AddSingleton<StatusBarViewModel>();
+                    services.AddTransient<LibraryActionsBarView>();
 
-                    // Engine/services (singletons)
-                    services.AddSingleton<LibraryService>();
-                    services.AddSingleton<LibraryIndex>();
-                    services.AddSingleton<SearchEngine>();
-
-                    // ScanQueueService MUST share the singleton LibraryService
-                    // and use the same library path as before.
-                    services.AddSingleton<ScanQueueService>(sp =>
-                    {
-                        var library = sp.GetRequiredService<LibraryService>();
-                        var libraryPath = AppPaths.GetLibraryJsonPath();
-                        return new ScanQueueService(library, libraryPath);
-                    });
-
-                    // VM + Window
-                    services.AddSingleton<MainWindowViewModel>();
-                    services.AddSingleton<MainWindow>();
-
-                    // Startup (calls InitializeAsync somewhere in your StartupService)
                     services.AddHostedService<StartupService>();
                 })
-                .Build();
+            .Build();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
+                // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 DisableAvaloniaDataAnnotationValidation();
+
+                var settingsService = AppHost.Services.GetRequiredService<ISettingsService>();
+                Task.Run(() => settingsService.InitializeAsync()).GetAwaiter().GetResult();
 
                 var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = AppHost.Services.GetRequiredService<MainWindowViewModel>();
+                if (mainWindow.DataContext is MainWindowViewModel mainWindowViewModel)
+                {
+                    _ = mainWindowViewModel.ComicGrid.InitializeAsync();
+                }
 
                 desktop.MainWindow = mainWindow;
 
@@ -89,9 +87,11 @@ namespace ComicSort.UI
 
         private void DisableAvaloniaDataAnnotationValidation()
         {
+            // Get an array of plugins to remove
             var dataValidationPluginsToRemove =
                 BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
+            // remove each entry found
             foreach (var plugin in dataValidationPluginsToRemove)
             {
                 BindingPlugins.DataValidators.Remove(plugin);
