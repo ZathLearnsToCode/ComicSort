@@ -2,8 +2,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ComicSort.UI.App"
              xmlns:local="using:ComicSort.UI"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Light">
+             <!-- Default for now: Soft Neutral Pro (defined in Styles/Themes.axaml). -->
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Styles/Themes.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -11,5 +19,9 @@
   
     <Application.Styles>
         <FluentTheme />
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{DynamicResource Theme.BackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource Theme.PrimaryTextBrush}" />
+        </Style>
     </Application.Styles>
 </Application>

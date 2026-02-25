@@ -5,8 +5,8 @@
              x:Class="ComicSort.UI.Views.Controls.ComicGridView"
              x:DataType="vm:ComicGridViewModel">
 
-    <Border Background="#F6F8FD"
-            BorderBrush="#D5DCE8"
+    <Border Background="{DynamicResource Theme.SurfaceBrush}"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Padding="8">
@@ -26,12 +26,12 @@
                         <Setter Property="BorderThickness" Value="1" />
                     </Style>
                     <Style Selector="ListBoxItem:pointerover">
-                        <Setter Property="Background" Value="#E7EDF9" />
-                        <Setter Property="BorderBrush" Value="#BDCAE1" />
+                        <Setter Property="Background" Value="{DynamicResource Theme.SelectionBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.BorderBrush}" />
                     </Style>
                     <Style Selector="ListBoxItem:selected">
-                        <Setter Property="Background" Value="#DCE7FA" />
-                        <Setter Property="BorderBrush" Value="#8BA5D6" />
+                        <Setter Property="Background" Value="{DynamicResource Theme.SelectionBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentBrush}" />
                     </Style>
                 </ListBox.Styles>
 
@@ -51,20 +51,20 @@
                             <Border Height="132"
                                     CornerRadius="4"
                                     BorderThickness="1"
-                                    BorderBrush="#263348"
-                                    Background="#1C2738">
+                                    BorderBrush="{DynamicResource Theme.BorderBrush}"
+                                    Background="{DynamicResource Theme.PanelBrush}">
                                 <Grid>
                                     <Image Stretch="Fill"
                                            Source="{Binding ThumbnailImage}" />
                                     <Border HorizontalAlignment="Left"
                                             VerticalAlignment="Top"
                                             Margin="4"
-                                            Background="#101927"
+                                            Background="{DynamicResource Theme.AccentBrush}"
                                             CornerRadius="3"
                                             Padding="4,1">
                                         <TextBlock Text="{Binding FileTypeTag}"
                                                    FontSize="10"
-                                                   Foreground="White" />
+                                                   Foreground="{DynamicResource Theme.OnAccentBrush}" />
                                     </Border>
                                 </Grid>
                             </Border>
@@ -72,7 +72,7 @@
                                        FontSize="11"
                                        TextWrapping="Wrap"
                                        TextAlignment="Center"
-                                       Foreground="#1E2A3B" />
+                                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -91,7 +91,7 @@
                                 <Expander.Header>
                                     <TextBlock Text="{Binding Header}"
                                                FontSize="16"
-                                               Foreground="#20348C"
+                                               Foreground="{DynamicResource Theme.AccentBrush}"
                                                FontWeight="SemiBold"
                                                TextWrapping="Wrap" />
                                 </Expander.Header>
@@ -109,12 +109,12 @@
                                             <Setter Property="BorderThickness" Value="1" />
                                         </Style>
                                         <Style Selector="ListBoxItem:pointerover">
-                                            <Setter Property="Background" Value="#E7EDF9" />
-                                            <Setter Property="BorderBrush" Value="#BDCAE1" />
+                                            <Setter Property="Background" Value="{DynamicResource Theme.SelectionBrush}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource Theme.BorderBrush}" />
                                         </Style>
                                         <Style Selector="ListBoxItem:selected">
-                                            <Setter Property="Background" Value="#DCE7FA" />
-                                            <Setter Property="BorderBrush" Value="#8BA5D6" />
+                                            <Setter Property="Background" Value="{DynamicResource Theme.SelectionBrush}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentBrush}" />
                                         </Style>
                                     </ListBox.Styles>
 
@@ -134,20 +134,20 @@
                                                 <Border Height="132"
                                                         CornerRadius="4"
                                                         BorderThickness="1"
-                                                        BorderBrush="#263348"
-                                                        Background="#1C2738">
+                                                        BorderBrush="{DynamicResource Theme.BorderBrush}"
+                                                        Background="{DynamicResource Theme.PanelBrush}">
                                                     <Grid>
                                                         <Image Stretch="Fill"
                                                                Source="{Binding ThumbnailImage}" />
                                                         <Border HorizontalAlignment="Left"
                                                                 VerticalAlignment="Top"
                                                                 Margin="4"
-                                                                Background="#101927"
+                                                                Background="{DynamicResource Theme.AccentBrush}"
                                                                 CornerRadius="3"
                                                                 Padding="4,1">
                                                             <TextBlock Text="{Binding FileTypeTag}"
                                                                        FontSize="10"
-                                                                       Foreground="White" />
+                                                                       Foreground="{DynamicResource Theme.OnAccentBrush}" />
                                                         </Border>
                                                     </Grid>
                                                 </Border>
@@ -155,7 +155,7 @@
                                                            FontSize="11"
                                                            TextWrapping="Wrap"
                                                            TextAlignment="Center"
-                                                           Foreground="#1E2A3B" />
+                                                           Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>

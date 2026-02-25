@@ -4,8 +4,8 @@
              x:Class="ComicSort.UI.Views.Controls.PathBarView"
              x:DataType="vm:PathBarViewModel">
 
-    <Border Background="#F4F7FC"
-            BorderBrush="#D5DCE8"
+    <Border Background="{DynamicResource Theme.SurfaceBrush}"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
             BorderThickness="1"
             CornerRadius="6"
             Padding="8,4">
@@ -13,11 +13,11 @@
             <TextBlock Text="{Binding CurrentPath}"
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis"
-                       Foreground="#30405A" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
             <TextBlock Grid.Column="1"
                        Text="{Binding PageSummary}"
                        VerticalAlignment="Center"
-                       Foreground="#6E7D95" />
+                       Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
         </Grid>
     </Border>
 </UserControl>

@@ -4,8 +4,8 @@
              x:Class="ComicSort.UI.Views.Controls.StatusBarView"
              x:DataType="vm:StatusBarViewModel">
 
-    <Border Background="#EEF2F8"
-            BorderBrush="#D5DCE8"
+    <Border Background="{DynamicResource Theme.PanelBrush}"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
             BorderThickness="1"
             CornerRadius="6"
             Padding="8,4">
@@ -13,28 +13,28 @@
             <TextBlock Grid.Column="0"
                        VerticalAlignment="Center"
                        Text="{Binding LibrarySummary}"
-                       Foreground="#2D3A4F" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
             <TextBlock Grid.Column="1"
                        VerticalAlignment="Center"
                        Text="{Binding SelectedFile}"
                        TextTrimming="CharacterEllipsis"
-                       Foreground="#2D3A4F" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
             <TextBlock Grid.Column="2"
                        VerticalAlignment="Center"
                        Text="{Binding TransferSummary}"
-                       Foreground="#2D3A4F" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
             <TextBlock Grid.Column="3"
                        VerticalAlignment="Center"
                        Text="{Binding RatioSummary}"
-                       Foreground="#2D3A4F" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
             <TextBlock Grid.Column="4"
                        VerticalAlignment="Center"
                        Text="{Binding IssueSummary}"
-                       Foreground="#2D3A4F" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
             <TextBlock Grid.Column="5"
                        VerticalAlignment="Center"
                        Text="{Binding YearSummary}"
-                       Foreground="#2D3A4F" />
+                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
         </Grid>
     </Border>
 </UserControl>

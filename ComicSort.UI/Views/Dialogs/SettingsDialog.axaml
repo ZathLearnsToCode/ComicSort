@@ -1,0 +1,203 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:ComicSort.UI.ViewModels.Dialogs"
+        x:Class="ComicSort.UI.Views.Dialogs.SettingsDialog"
+        x:DataType="vm:SettingsDialogViewModel"
+        Width="920"
+        Height="620"
+        MinWidth="760"
+        MinHeight="520"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Title="Preferences"
+        Background="{DynamicResource Theme.BackgroundBrush}"
+        Foreground="{DynamicResource Theme.PrimaryTextBrush}"
+        mc:Ignorable="d"
+        d:DesignWidth="920"
+        d:DesignHeight="620">
+
+    <Window.Styles>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource Theme.SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Theme.BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+        <Style Selector="TextBlock.section-title">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource Theme.PrimaryTextBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="14">
+        <Border Grid.Row="0"
+                Classes="card"
+                Background="{DynamicResource Theme.PanelBrush}"
+                Padding="14,12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Settings"
+                           FontSize="22"
+                           FontWeight="Bold" />
+                <TextBlock Text="Manage application preferences, themes, and library folders."
+                           Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="220,*"
+              ColumnSpacing="12"
+              Margin="0,12,0,12">
+            <Border Grid.Column="0" Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Sections"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+                    <ListBox ItemsSource="{Binding Sections}"
+                             SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                             BorderThickness="0"
+                             Background="Transparent">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="10,8" />
+                                <Setter Property="CornerRadius" Value="8" />
+                                <Setter Property="Margin" Value="0,0,0,6" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected">
+                                <Setter Property="Background" Value="{DynamicResource Theme.SelectionBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentBrush}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                            </Style>
+                        </ListBox.Styles>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer Grid.Column="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <Grid RowDefinitions="Auto,Auto"
+                      RowSpacing="12">
+                    <StackPanel Grid.Row="0"
+                                Spacing="12"
+                                IsVisible="{Binding IsGeneralSectionSelected}">
+                        <TextBlock Classes="section-title" Text="General" />
+
+                        <Border Classes="card">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                                  RowSpacing="8">
+                                <TextBlock Text="Current Theme"
+                                           FontWeight="SemiBold" />
+                                <ComboBox Grid.Row="1"
+                                          Width="260"
+                                          ItemsSource="{Binding ThemeOptions}"
+                                          SelectedItem="{Binding SelectedCurrentTheme, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Row="2"
+                                           Margin="0,6,0,0"
+                                           Text="Default Theme"
+                                           FontWeight="SemiBold" />
+                                <ComboBox Grid.Row="3"
+                                          Width="260"
+                                          ItemsSource="{Binding ThemeOptions}"
+                                          SelectedItem="{Binding SelectedDefaultTheme, Mode=TwoWay}" />
+
+                                <TextBlock Grid.Row="4"
+                                           Margin="0,6,0,0"
+                                           Text="Current theme is previewed immediately. Save persists both current and default themes to settings.json."
+                                           Foreground="{DynamicResource Theme.SecondaryTextBrush}"
+                                           TextWrapping="Wrap" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1"
+                                Spacing="12"
+                                IsVisible="{Binding IsLibrarySectionSelected}">
+                        <TextBlock Classes="section-title" Text="Library" />
+
+                        <Border Classes="card">
+                            <Grid RowDefinitions="Auto,*,Auto"
+                                  RowSpacing="12"
+                                  MinHeight="320">
+                                <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
+                                      ColumnSpacing="8">
+                                    <TextBlock Text="Configured Library Folders"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold" />
+                                    <Button Grid.Column="1"
+                                            Content="Add"
+                                            Command="{Binding AddLibraryFolderCommand}" />
+                                    <Button Grid.Column="2"
+                                            Content="Change"
+                                            Command="{Binding ChangeLibraryFolderCommand}" />
+                                    <Button Grid.Column="3"
+                                            Content="Remove"
+                                            Command="{Binding RemoveLibraryFolderCommand}" />
+                                    <Button Grid.Column="4"
+                                            Content="Open"
+                                            Command="{Binding OpenLibraryFolderCommand}" />
+                                </Grid>
+
+                                <Border Grid.Row="1"
+                                        BorderBrush="{DynamicResource Theme.BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="6">
+                                    <ListBox ItemsSource="{Binding LibraryFolders}"
+                                             SelectedItem="{Binding SelectedLibraryFolder, Mode=TwoWay}"
+                                             BorderThickness="0"
+                                             Background="Transparent">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:LibraryFolderEntryViewModel">
+                                                <Grid ColumnDefinitions="Auto,*"
+                                                      ColumnSpacing="10"
+                                                      Margin="2">
+                                                    <CheckBox IsChecked="{Binding Watched, Mode=TwoWay}"
+                                                              VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Path}"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+
+                                <TextBlock Grid.Row="2"
+                                           Text="Checked folders are marked for future watcher support."
+                                           Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Grid.Row="2"
+                Classes="card"
+                Padding="12,8">
+            <Grid ColumnDefinitions="*,Auto,Auto"
+                  ColumnSpacing="8">
+                <TextBlock Text="{Binding StatusText}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Theme.SecondaryTextBrush}"
+                           TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="1"
+                        Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        MinWidth="90" />
+                <Button Grid.Column="2"
+                        Content="Save"
+                        Command="{Binding SaveCommand}"
+                        MinWidth="90"
+                        Background="{DynamicResource Theme.AccentBrush}"
+                        Foreground="{DynamicResource Theme.OnAccentBrush}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

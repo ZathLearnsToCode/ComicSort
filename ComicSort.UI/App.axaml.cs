@@ -29,8 +29,9 @@ namespace ComicSort.UI
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddSingleton<IDialogService, DialogService>();
                     services.AddSingleton<ISettingsService, SettingsService>();
+                    services.AddSingleton<IThemeService, ThemeService>();
+                    services.AddSingleton<IDialogService, DialogService>();
                     services.AddSingleton<IComicDbContextFactory, ComicDbContextFactory>();
                     services.AddSingleton<IComicDatabaseService, ComicDatabaseService>();
                     services.AddSingleton<IScanRepository, ScanRepository>();
@@ -60,6 +61,22 @@ namespace ComicSort.UI
 
                 var settingsService = AppHost.Services.GetRequiredService<ISettingsService>();
                 Task.Run(() => settingsService.InitializeAsync()).GetAwaiter().GetResult();
+                var themeService = AppHost.Services.GetRequiredService<IThemeService>();
+
+                var originalDefaultTheme = settingsService.CurrentSettings.DefaultTheme;
+                var originalCurrentTheme = settingsService.CurrentSettings.CurrentTheme;
+
+                var defaultTheme = themeService.NormalizeThemeName(originalDefaultTheme);
+                var currentTheme = themeService.NormalizeThemeName(originalCurrentTheme, defaultTheme);
+                settingsService.CurrentSettings.DefaultTheme = defaultTheme;
+                settingsService.CurrentSettings.CurrentTheme = currentTheme;
+                themeService.ApplyTheme(currentTheme);
+
+                if (!string.Equals(originalDefaultTheme, defaultTheme, System.StringComparison.Ordinal) ||
+                    !string.Equals(originalCurrentTheme, currentTheme, System.StringComparison.Ordinal))
+                {
+                    Task.Run(() => settingsService.SaveAsync()).GetAwaiter().GetResult();
+                }
 
                 var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = AppHost.Services.GetRequiredService<MainWindowViewModel>();

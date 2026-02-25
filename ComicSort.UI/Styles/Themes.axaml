@@ -1,0 +1,103 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Active palette (default): Soft Neutral Pro -->
+  <Color x:Key="Theme.BackgroundColor">#F7F8FA</Color>
+  <Color x:Key="Theme.SurfaceColor">#FFFFFF</Color>
+  <Color x:Key="Theme.PanelColor">#ECEFF3</Color>
+  <Color x:Key="Theme.BorderColor">#D6D9DF</Color>
+  <Color x:Key="Theme.PrimaryTextColor">#1F2933</Color>
+  <Color x:Key="Theme.SecondaryTextColor">#6B7280</Color>
+  <Color x:Key="Theme.AccentColor">#2563EB</Color>
+  <Color x:Key="Theme.AccentHoverColor">#1D4ED8</Color>
+  <Color x:Key="Theme.SelectionColor">#DBEAFE</Color>
+  <Color x:Key="Theme.OnAccentColor">#FFFFFF</Color>
+  <Color x:Key="Theme.DangerColor">#9B4B4B</Color>
+  <Color x:Key="Theme.DangerHoverColor">#8A3E3E</Color>
+
+  <SolidColorBrush x:Key="Theme.BackgroundBrush" Color="{DynamicResource Theme.BackgroundColor}" />
+  <SolidColorBrush x:Key="Theme.SurfaceBrush" Color="{DynamicResource Theme.SurfaceColor}" />
+  <SolidColorBrush x:Key="Theme.PanelBrush" Color="{DynamicResource Theme.PanelColor}" />
+  <SolidColorBrush x:Key="Theme.BorderBrush" Color="{DynamicResource Theme.BorderColor}" />
+  <SolidColorBrush x:Key="Theme.PrimaryTextBrush" Color="{DynamicResource Theme.PrimaryTextColor}" />
+  <SolidColorBrush x:Key="Theme.SecondaryTextBrush" Color="{DynamicResource Theme.SecondaryTextColor}" />
+  <SolidColorBrush x:Key="Theme.AccentBrush" Color="{DynamicResource Theme.AccentColor}" />
+  <SolidColorBrush x:Key="Theme.AccentHoverBrush" Color="{DynamicResource Theme.AccentHoverColor}" />
+  <SolidColorBrush x:Key="Theme.SelectionBrush" Color="{DynamicResource Theme.SelectionColor}" />
+  <SolidColorBrush x:Key="Theme.OnAccentBrush" Color="{DynamicResource Theme.OnAccentColor}" />
+  <SolidColorBrush x:Key="Theme.DangerBrush" Color="{DynamicResource Theme.DangerColor}" />
+  <SolidColorBrush x:Key="Theme.DangerHoverBrush" Color="{DynamicResource Theme.DangerHoverColor}" />
+
+  <!-- Light Themes -->
+  <ResourceDictionary x:Key="ThemePalette.SoftNeutralPro">
+    <Color x:Key="BackgroundColor">#F7F8FA</Color>
+    <Color x:Key="SurfaceColor">#FFFFFF</Color>
+    <Color x:Key="PanelColor">#ECEFF3</Color>
+    <Color x:Key="BorderColor">#D6D9DF</Color>
+    <Color x:Key="PrimaryTextColor">#1F2933</Color>
+    <Color x:Key="SecondaryTextColor">#6B7280</Color>
+    <Color x:Key="AccentColor">#2563EB</Color>
+    <Color x:Key="AccentHoverColor">#1D4ED8</Color>
+    <Color x:Key="SelectionColor">#DBEAFE</Color>
+  </ResourceDictionary>
+
+  <ResourceDictionary x:Key="ThemePalette.WarmEditorial">
+    <Color x:Key="BackgroundColor">#FAF8F5</Color>
+    <Color x:Key="SurfaceColor">#FFFFFF</Color>
+    <Color x:Key="PanelColor">#F1ECE6</Color>
+    <Color x:Key="BorderColor">#D9D3CC</Color>
+    <Color x:Key="PrimaryTextColor">#2B2B2B</Color>
+    <Color x:Key="SecondaryTextColor">#7A746C</Color>
+    <Color x:Key="AccentColor">#0D9488</Color>
+    <Color x:Key="AccentHoverColor">#0F766E</Color>
+    <Color x:Key="SelectionColor">#CCFBF1</Color>
+  </ResourceDictionary>
+
+  <ResourceDictionary x:Key="ThemePalette.MinimalHighContrast">
+    <Color x:Key="BackgroundColor">#FFFFFF</Color>
+    <Color x:Key="SurfaceColor">#F3F4F6</Color>
+    <Color x:Key="PanelColor">#F3F4F6</Color>
+    <Color x:Key="BorderColor">#D1D5DB</Color>
+    <Color x:Key="PrimaryTextColor">#111827</Color>
+    <Color x:Key="SecondaryTextColor">#6B7280</Color>
+    <Color x:Key="AccentColor">#4F46E5</Color>
+    <Color x:Key="AccentHoverColor">#4F46E5</Color>
+    <Color x:Key="SelectionColor">#E0E7FF</Color>
+  </ResourceDictionary>
+
+  <!-- Dark Themes -->
+  <ResourceDictionary x:Key="ThemePalette.DeepSlate">
+    <Color x:Key="BackgroundColor">#0F172A</Color>
+    <Color x:Key="SurfaceColor">#1E293B</Color>
+    <Color x:Key="PanelColor">#273449</Color>
+    <Color x:Key="BorderColor">#334155</Color>
+    <Color x:Key="PrimaryTextColor">#E2E8F0</Color>
+    <Color x:Key="SecondaryTextColor">#94A3B8</Color>
+    <Color x:Key="AccentColor">#3B82F6</Color>
+    <Color x:Key="AccentHoverColor">#2563EB</Color>
+    <Color x:Key="SelectionColor">#1E3A8A</Color>
+  </ResourceDictionary>
+
+  <ResourceDictionary x:Key="ThemePalette.GraphiteTeal">
+    <Color x:Key="BackgroundColor">#121212</Color>
+    <Color x:Key="SurfaceColor">#1E1E1E</Color>
+    <Color x:Key="PanelColor">#252525</Color>
+    <Color x:Key="BorderColor">#2E2E2E</Color>
+    <Color x:Key="PrimaryTextColor">#F5F5F5</Color>
+    <Color x:Key="SecondaryTextColor">#B3B3B3</Color>
+    <Color x:Key="AccentColor">#14B8A6</Color>
+    <Color x:Key="AccentHoverColor">#0D9488</Color>
+    <Color x:Key="SelectionColor">#134E4A</Color>
+  </ResourceDictionary>
+
+  <ResourceDictionary x:Key="ThemePalette.AmoledFriendly">
+    <Color x:Key="BackgroundColor">#000000</Color>
+    <Color x:Key="SurfaceColor">#121212</Color>
+    <Color x:Key="PanelColor">#121212</Color>
+    <Color x:Key="BorderColor">#1F1F1F</Color>
+    <Color x:Key="PrimaryTextColor">#FFFFFF</Color>
+    <Color x:Key="SecondaryTextColor">#9CA3AF</Color>
+    <Color x:Key="AccentColor">#3B82F6</Color>
+    <Color x:Key="AccentHoverColor">#3B82F6</Color>
+    <Color x:Key="SelectionColor">#1D4ED8</Color>
+  </ResourceDictionary>
+</ResourceDictionary>

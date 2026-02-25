@@ -5,19 +5,19 @@
              x:Class="ComicSort.UI.Views.Controls.SidebarView"
              x:Name="Root"
              x:DataType="vm:SidebarViewModel">
-    <Border Background="#3B5068" BorderBrush="#2C3E50" BorderThickness="0,0,1,0">
+    <Border Background="{DynamicResource Theme.PanelBrush}" BorderBrush="{DynamicResource Theme.BorderBrush}" BorderThickness="0,0,1,0">
         <DockPanel>
-            <Border DockPanel.Dock="Top" Background="#4A6580" Padding="10,8">
+            <Border DockPanel.Dock="Top" Background="{DynamicResource Theme.AccentBrush}" Padding="10,8">
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Grid.Column="0"
                                Text="{Binding LibraryHeaderText}"
-                               Foreground="White"
+                               Foreground="{DynamicResource Theme.OnAccentBrush}"
                                FontWeight="Bold"
                                FontSize="14"
                                VerticalAlignment="Center" />
                     <Button Grid.Column="1"
                             Content="&#x2699;"
-                            Foreground="White"
+                            Foreground="{DynamicResource Theme.OnAccentBrush}"
                             Background="Transparent"
                             BorderThickness="0"
                             Padding="4,2"
@@ -34,11 +34,11 @@
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">
                                 <Setter Property="Padding" Value="10,5" />
-                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="Foreground" Value="{DynamicResource Theme.PrimaryTextBrush}" />
                                 <Setter Property="FontSize" Value="12" />
                             </Style>
                             <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                                <Setter Property="Background" Value="#5B7AA0" />
+                                <Setter Property="Background" Value="{DynamicResource Theme.SelectionBrush}" />
                             </Style>
                         </ListBox.Styles>
                         <ListBox.ItemTemplate>
@@ -46,17 +46,17 @@
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding Name}"
-                                               Foreground="White"
+                                               Foreground="{DynamicResource Theme.PrimaryTextBrush}"
                                                VerticalAlignment="Center" />
                                     <Border Grid.Column="1"
-                                            Background="#5B7AA0"
+                                            Background="{DynamicResource Theme.AccentBrush}"
                                             CornerRadius="8"
                                             Padding="6,1"
                                             IsVisible="{Binding HasCount}"
                                             MinWidth="22"
                                             HorizontalAlignment="Center">
                                         <TextBlock Text="{Binding Count}"
-                                                   Foreground="White"
+                                                   Foreground="{DynamicResource Theme.OnAccentBrush}"
                                                    FontSize="10"
                                                    HorizontalAlignment="Center" />
                                     </Border>
@@ -65,18 +65,18 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <Border Background="#4A6580" Padding="10,6" Margin="0,8,0,0">
+                    <Border Background="{DynamicResource Theme.AccentBrush}" Padding="10,6" Margin="0,8,0,0">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0"
                                        Text="Smart Lists"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Theme.OnAccentBrush}"
                                        FontWeight="Bold"
                                        FontSize="12"
                                        VerticalAlignment="Center" />
                             <Button Grid.Column="1"
                                     Content="+"
                                     Command="{Binding AddSmartListCommand}"
-                                    Foreground="White"
+                                    Foreground="{DynamicResource Theme.OnAccentBrush}"
                                     FontWeight="Bold"
                                     FontSize="14"
                                     Background="Transparent"
@@ -101,7 +101,7 @@
                         <TreeView.Styles>
                             <Style Selector="TreeViewItem">
                                 <Setter Property="Padding" Value="10,5" />
-                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="Foreground" Value="{DynamicResource Theme.PrimaryTextBrush}" />
                                 <Setter Property="FontSize" Value="12" />
                                 <Setter Property="IsExpanded" Value="True" />
                             </Style>
@@ -133,14 +133,14 @@
                                     <Border Grid.Column="0" Background="Transparent">
                                         <Grid>
                                             <TextBlock Text="{Binding Name}"
-                                                       Foreground="White"
+                                                       Foreground="{DynamicResource Theme.PrimaryTextBrush}"
                                                        VerticalAlignment="Center"
                                                        FontWeight="Bold"
                                                        IsVisible="{Binding IsHeader}" />
 
                                             <Panel IsVisible="{Binding !IsHeader}">
                                                 <TextBlock Text="{Binding Name}"
-                                                           Foreground="White"
+                                                           Foreground="{DynamicResource Theme.PrimaryTextBrush}"
                                                            VerticalAlignment="Center"
                                                            IsVisible="{Binding !IsEditing}" />
                                                 <TextBox Text="{Binding Name, Mode=TwoWay}"
@@ -149,9 +149,9 @@
                                                          Padding="2"
                                                          MinWidth="80"
                                                          VerticalAlignment="Center"
-                                                         Foreground="Black"
-                                                         Background="White"
-                                                         BorderBrush="#5B7AA0"
+                                                         Foreground="{DynamicResource Theme.PrimaryTextBrush}"
+                                                         Background="{DynamicResource Theme.SurfaceBrush}"
+                                                         BorderBrush="{DynamicResource Theme.BorderBrush}"
                                                          BorderThickness="1"
                                                          CornerRadius="2"
                                                          LostFocus="SmartListTextBox_LostFocus"
@@ -161,14 +161,14 @@
                                     </Border>
 
                                     <Border Grid.Column="1"
-                                            Background="#5B7AA0"
+                                            Background="{DynamicResource Theme.AccentBrush}"
                                             CornerRadius="8"
                                             Padding="6,1"
                                             IsVisible="{Binding HasCount}"
                                             MinWidth="22"
                                             HorizontalAlignment="Center">
                                         <TextBlock Text="{Binding Count}"
-                                                   Foreground="White"
+                                                   Foreground="{DynamicResource Theme.OnAccentBrush}"
                                                    FontSize="10"
                                                    HorizontalAlignment="Center" />
                                     </Border>

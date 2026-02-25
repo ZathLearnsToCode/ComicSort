@@ -15,7 +15,7 @@
         MinWidth="1100"
         MinHeight="700">
 
-    <Border Background="#E7ECF5" Padding="8">
+    <Border Background="{DynamicResource Theme.BackgroundBrush}" Padding="8">
         <Grid RowDefinitions="Auto,Auto,*"
               ColumnDefinitions="240,*"
               RowSpacing="8"

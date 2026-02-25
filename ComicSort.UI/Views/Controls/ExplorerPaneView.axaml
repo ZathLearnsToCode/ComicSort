@@ -5,8 +5,8 @@
              x:Class="ComicSort.UI.Views.Controls.ExplorerPaneView"
              x:DataType="vm:ExplorerPaneViewModel">
 
-    <Border Background="#EEF2F8"
-            BorderBrush="#D5DCE8"
+    <Border Background="{DynamicResource Theme.PanelBrush}"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Padding="6">
@@ -22,9 +22,9 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="model:NamedCountItemModel">
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="2">
-                            <TextBlock Grid.Column="0" Text="{Binding Glyph}" Foreground="#627A9E" />
-                            <TextBlock Grid.Column="1" Text="{Binding Name}" />
-                            <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="#6E7D95" />
+                            <TextBlock Grid.Column="0" Text="{Binding Glyph}" Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

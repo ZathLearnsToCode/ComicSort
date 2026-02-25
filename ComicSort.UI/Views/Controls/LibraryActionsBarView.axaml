@@ -4,8 +4,8 @@
              x:Class="ComicSort.UI.Views.Controls.LibraryActionsBarView"
              x:DataType="vm:LibraryActionsBarViewModel">
 
-    <Border Background="LightGray"
-            BorderBrush="#D5DCE8"
+    <Border Background="{DynamicResource Theme.PanelBrush}"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Padding="8">
@@ -16,36 +16,36 @@
                     Command="{Binding AddFolderToLibraryCommand}"
                     IsEnabled="{Binding AddFolderEnabled}"
                     Padding="14,6"
-                    Foreground="White"
-                    Background="DarkGray"/>
+                    Foreground="{DynamicResource Theme.OnAccentBrush}"
+                    Background="{DynamicResource Theme.AccentBrush}"/>
 
             <Button Grid.Column="1"
                     Content="{Binding ScanLibraryButtonText}"
                     Command="{Binding ScanLibraryCommand}"
                     IsEnabled="{Binding ScanLibraryEnabled}"
                     Padding="14,6"
-                    Foreground="White"
-                    Background="DarkGray"/>
+                    Foreground="{DynamicResource Theme.OnAccentBrush}"
+                    Background="{DynamicResource Theme.AccentBrush}"/>
 
             <Button Grid.Column="2"
                     Content="{Binding CancelScanButtonText}"
                     Command="{Binding CancelScanCommand}"
                     IsEnabled="{Binding IsScanRunning}"
                     Padding="14,6"
-                    Foreground="White"
-                    Background="#9B4B4B"/>
+                    Foreground="{DynamicResource Theme.OnAccentBrush}"
+                    Background="{DynamicResource Theme.DangerBrush}"/>
 
             <TextBlock Grid.Column="3"
                        VerticalAlignment="Center"
                        Margin="8,0,0,0"
                        Text="{Binding StatusText}"
-                       Foreground="#5A6B86" />
+                       Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
 
             <Button Grid.Column="4"
                     Command="{Binding OpenSettingsCommand}"
                     Padding="12,6"
-                    Foreground="White"
-                    Background="DarkGray">
+                    Foreground="{DynamicResource Theme.OnAccentBrush}"
+                    Background="{DynamicResource Theme.AccentBrush}">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <TextBlock Text="&#x2699;" />
                     <TextBlock Text="{Binding SettingsButtonText}" />

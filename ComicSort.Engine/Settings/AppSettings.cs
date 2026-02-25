@@ -21,6 +21,14 @@ public sealed class AppSettings
 
     public string ThumbnailCacheDirectory { get; set; } = Path.Combine(AppDataRoot, "cache", "thumbnails");
 
+    public string DefaultTheme { get; set; } = "Soft Neutral Pro";
+
+    public string CurrentTheme { get; set; } = "Soft Neutral Pro";
+
+    [JsonPropertyName("themeName")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? LegacyThemeName { get; set; }
+
     public int ScanBatchSize { get; set; } = 500;
 
     public int ScanWorkerCount { get; set; } = Math.Min(4, Environment.ProcessorCount);

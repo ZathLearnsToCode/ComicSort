@@ -139,6 +139,20 @@ public sealed class SettingsService : ISettingsService
         settings.ThumbnailCacheDirectory = string.IsNullOrWhiteSpace(settings.ThumbnailCacheDirectory)
             ? defaultThumbnailCacheDirectory
             : settings.ThumbnailCacheDirectory.Trim();
+        settings.DefaultTheme = string.IsNullOrWhiteSpace(settings.DefaultTheme)
+            ? "Soft Neutral Pro"
+            : settings.DefaultTheme.Trim();
+
+        var currentThemeCandidate = !string.IsNullOrWhiteSpace(settings.CurrentTheme)
+            ? settings.CurrentTheme
+            : settings.LegacyThemeName;
+
+        settings.CurrentTheme = string.IsNullOrWhiteSpace(currentThemeCandidate)
+            ? settings.DefaultTheme
+            : currentThemeCandidate.Trim();
+
+        settings.LegacyThemeName = null;
+
         settings.ScanBatchSize = settings.ScanBatchSize <= 0 ? DefaultScanBatchSize : settings.ScanBatchSize;
         settings.ScanWorkerCount = settings.ScanWorkerCount <= 0
             ? Math.Min(4, Environment.ProcessorCount)
@@ -208,6 +222,8 @@ public sealed class SettingsService : ISettingsService
             LastUpdatedUtc = now,
             DatabasePath = GetDefaultDatabasePath(),
             ThumbnailCacheDirectory = GetDefaultThumbnailCacheDirectory(),
+            DefaultTheme = "Soft Neutral Pro",
+            CurrentTheme = "Soft Neutral Pro",
             ScanBatchSize = DefaultScanBatchSize,
             ScanWorkerCount = Math.Min(4, Environment.ProcessorCount),
             ScanStatusUpdateIntervalMs = DefaultScanStatusUpdateIntervalMs,

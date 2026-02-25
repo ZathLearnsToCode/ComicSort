@@ -104,9 +104,10 @@ public partial class LibraryActionsBarViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void OpenSettings()
+    private async Task OpenSettingsAsync()
     {
-        StatusText = "Settings opened";
+        var saved = await _dialogService.ShowSettingsDialogAsync();
+        StatusText = saved ? "Settings saved" : "Settings closed";
     }
 
     private void OnScanProgressChanged(object? sender, ScanProgressUpdate update)

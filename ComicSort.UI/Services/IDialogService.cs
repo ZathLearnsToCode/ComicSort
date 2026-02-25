@@ -9,5 +9,6 @@ namespace ComicSort.UI.Services
     {
         Task<string?> ShowOpenFileDialogAsync(string title);
         Task<string?> ShowOpenFolderDialogAsync(string title);
+        Task<bool> ShowSettingsDialogAsync();
     }
 }

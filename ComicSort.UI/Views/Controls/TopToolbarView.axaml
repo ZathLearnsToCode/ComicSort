@@ -4,15 +4,15 @@
              x:Class="ComicSort.UI.Views.Controls.TopToolbarView"
              x:DataType="vm:TopToolbarViewModel">
 
-    <Border Background="#EEF2F8"
-            BorderBrush="#D5DCE8"
+    <Border Background="{DynamicResource Theme.PanelBrush}"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Padding="8">
         <Grid ColumnDefinitions="300,145,170,120,*,280" ColumnSpacing="25">
             <Border Grid.Column="0"
-                    Background="#F8FAFD"
-                    BorderBrush="#D7DEEA"
+                    Background="{DynamicResource Theme.SurfaceBrush}"
+                    BorderBrush="{DynamicResource Theme.BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="6"
                     Padding="8,4">
@@ -22,7 +22,7 @@
                                Margin="0,0,8,0"
                                Text="⌕"
                                FontSize="16"
-                               Foreground="#6B7892" />
+                               Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
                     <TextBox Background="Transparent"
                              BorderThickness="0"
                              Watermark="Search..."
@@ -31,7 +31,7 @@
             </Border>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Label Content="Group by : " Foreground="Black" VerticalAlignment="Center"/>
+                <Label Content="Group by : " Foreground="{DynamicResource Theme.PrimaryTextBrush}" VerticalAlignment="Center"/>
                 <Button x:Name="PrimaryFilterButton"
                         VerticalAlignment="Center"
                         Padding="10,4"
