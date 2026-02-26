@@ -140,6 +140,7 @@ public sealed class ComicConversionService : IComicConversionService
                 Error = "No images were found in the archive."
             };
         }
+        var comicInfoEntry = FindComicInfoEntry(listResult.OutputText, sourcePath);
 
         var targetPath = GetAvailableDestinationPath(Path.ChangeExtension(sourcePath, ".cbz"));
         var tempOutputPath = Path.Combine(
@@ -151,6 +152,7 @@ public sealed class ComicConversionService : IComicConversionService
             await CreateCbzArchiveAsync(
                 sourcePath,
                 imageEntries,
+                comicInfoEntry,
                 tempOutputPath,
                 sevenZipPath,
                 cancellationToken);
@@ -264,6 +266,7 @@ public sealed class ComicConversionService : IComicConversionService
     private static async Task CreateCbzArchiveAsync(
         string sourcePath,
         IReadOnlyList<string> imageEntries,
+        string? comicInfoEntry,
         string destinationPath,
         string sevenZipPath,
         CancellationToken cancellationToken)
@@ -292,6 +295,21 @@ public sealed class ComicConversionService : IComicConversionService
             var outputEntry = outputArchive.CreateEntry(outputEntryPath, CompressionLevel.Optimal);
             await using var entryStream = outputEntry.Open();
             await entryStream.WriteAsync(extractResult.OutputBytes, cancellationToken);
+        }
+
+        if (!string.IsNullOrWhiteSpace(comicInfoEntry))
+        {
+            var comicInfoResult = await ExecuteBinaryCommandAsync(
+                sevenZipPath,
+                ["e", "-so", "-y", sourcePath, comicInfoEntry],
+                cancellationToken);
+
+            if (comicInfoResult.ExitCode == 0 && comicInfoResult.OutputBytes.Length > 0)
+            {
+                var comicInfoOutputEntry = outputArchive.CreateEntry("ComicInfo.xml", CompressionLevel.Optimal);
+                await using var comicInfoStream = comicInfoOutputEntry.Open();
+                await comicInfoStream.WriteAsync(comicInfoResult.OutputBytes, cancellationToken);
+            }
         }
     }
 
@@ -355,6 +373,39 @@ public sealed class ComicConversionService : IComicConversionService
         return entries;
     }
 
+    private static string? FindComicInfoEntry(string outputText, string archivePath)
+    {
+        string? currentPath = null;
+        var currentIsFolder = false;
+        var normalizedArchivePath = Path.GetFullPath(archivePath);
+
+        foreach (var rawLine in outputText.Split('\n'))
+        {
+            var line = rawLine.TrimEnd('\r');
+
+            if (line.StartsWith("Path = ", StringComparison.Ordinal))
+            {
+                if (IsComicInfoEntry(currentPath, currentIsFolder, normalizedArchivePath))
+                {
+                    return currentPath;
+                }
+
+                currentPath = line["Path = ".Length..].Trim();
+                currentIsFolder = false;
+                continue;
+            }
+
+            if (line.StartsWith("Folder = ", StringComparison.Ordinal))
+            {
+                currentIsFolder = line.EndsWith('+');
+            }
+        }
+
+        return IsComicInfoEntry(currentPath, currentIsFolder, normalizedArchivePath)
+            ? currentPath
+            : null;
+    }
+
     private static bool ShouldUseEntry(string? entryPath, bool isFolder, string normalizedArchivePath)
     {
         if (string.IsNullOrWhiteSpace(entryPath) || isFolder)
@@ -373,6 +424,28 @@ public sealed class ComicConversionService : IComicConversionService
 
         var extension = Path.GetExtension(entryPath);
         return SupportedImageExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsComicInfoEntry(string? entryPath, bool isFolder, string normalizedArchivePath)
+    {
+        if (string.IsNullOrWhiteSpace(entryPath) || isFolder)
+        {
+            return false;
+        }
+
+        if (Path.IsPathRooted(entryPath))
+        {
+            var normalizedEntry = Path.GetFullPath(entryPath);
+            if (string.Equals(normalizedEntry, normalizedArchivePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return string.Equals(
+            Path.GetFileName(entryPath),
+            "ComicInfo.xml",
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeImageExtension(string? extension)
