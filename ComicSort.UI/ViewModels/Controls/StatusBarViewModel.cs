@@ -27,8 +27,10 @@ public partial class StatusBarViewModel : ViewModelBase
         _scanService.ProgressChanged += OnScanProgressChanged;
         _scanService.StateChanged += OnScanStateChanged;
         comicGridViewModel.SelectedItemChanged += OnSelectedItemChanged;
+        comicGridViewModel.FilterSummaryChanged += OnFilterSummaryChanged;
 
         SelectedFile = comicGridViewModel.SelectedItem?.FilePath ?? "No book selected";
+        FilterSummary = comicGridViewModel.FilterSummary;
         _ = LoadLibrarySummaryAsync();
     }
 
@@ -37,6 +39,9 @@ public partial class StatusBarViewModel : ViewModelBase
 
     [ObservableProperty]
     private string selectedFile = "No book selected";
+
+    [ObservableProperty]
+    private string filterSummary = "Filter: All Comics";
 
     [ObservableProperty]
     private string transferSummary = "Scanned: 0";
@@ -67,6 +72,14 @@ public partial class StatusBarViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() =>
         {
             SelectedFile = selectedItem?.FilePath ?? "No book selected";
+        });
+    }
+
+    private void OnFilterSummaryChanged(object? sender, string summary)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            FilterSummary = summary;
         });
     }
 

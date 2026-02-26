@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:ComicSort.UI.ViewModels.Dialogs"
+        x:Class="ComicSort.UI.Views.Dialogs.CbzConversionConfirmationDialog"
+        x:DataType="vm:CbzConversionConfirmationDialogViewModel"
+        Width="460"
+        Height="250"
+        MinWidth="420"
+        MinHeight="220"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Title="Convert To CBZ"
+        Background="{DynamicResource Theme.BackgroundBrush}"
+        Foreground="{DynamicResource Theme.PrimaryTextBrush}"
+        mc:Ignorable="d"
+        d:DesignWidth="460"
+        d:DesignHeight="250">
+
+    <Border Margin="14"
+            Padding="14"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Background="{DynamicResource Theme.SurfaceBrush}">
+        <Grid RowDefinitions="Auto,Auto,Auto,*"
+              RowSpacing="10">
+            <TextBlock Text="{Binding Message}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap" />
+
+            <CheckBox Grid.Row="1"
+                      Content="Send original file to Recycle Bin"
+                      IsChecked="{Binding SendOriginalToRecycleBin, Mode=TwoWay}" />
+
+            <CheckBox Grid.Row="2"
+                      Content="Don't ask again"
+                      IsChecked="{Binding DontAskAgain, Mode=TwoWay}" />
+
+            <Grid Grid.Row="3"
+                  ColumnDefinitions="*,Auto,Auto"
+                  ColumnSpacing="8"
+                  VerticalAlignment="Bottom">
+                <TextBlock Text="Original files are only removed when enabled."
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+                <Button Grid.Column="1"
+                        Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        MinWidth="90" />
+                <Button Grid.Column="2"
+                        Content="Convert"
+                        Command="{Binding ConfirmCommand}"
+                        MinWidth="90"
+                        Background="{DynamicResource Theme.AccentBrush}"
+                        Foreground="{DynamicResource Theme.OnAccentBrush}" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

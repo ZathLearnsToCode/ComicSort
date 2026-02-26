@@ -132,7 +132,8 @@ public sealed class SettingsService : ISettingsService
         var defaultDatabasePath = GetDefaultDatabasePath();
         var defaultThumbnailCacheDirectory = GetDefaultThumbnailCacheDirectory();
 
-        settings.Version = settings.Version <= 0 ? 1 : settings.Version;
+        var originalVersion = settings.Version <= 0 ? 1 : settings.Version;
+        settings.Version = Math.Max(originalVersion, 2);
         settings.DatabasePath = string.IsNullOrWhiteSpace(settings.DatabasePath)
             ? defaultDatabasePath
             : settings.DatabasePath.Trim();
@@ -160,6 +161,10 @@ public sealed class SettingsService : ISettingsService
         settings.ScanStatusUpdateIntervalMs = settings.ScanStatusUpdateIntervalMs <= 0
             ? DefaultScanStatusUpdateIntervalMs
             : settings.ScanStatusUpdateIntervalMs;
+        if (originalVersion < 2)
+        {
+            settings.ConfirmCbzConversion = true;
+        }
         settings.LibraryFolders ??= [];
         settings.LibraryFolders = settings.LibraryFolders
             .Where(x => !string.IsNullOrWhiteSpace(x.Folder))
@@ -171,11 +176,9 @@ public sealed class SettingsService : ISettingsService
             })
             .ToList();
         settings.ComicLists ??= [];
-
         foreach (var comicList in settings.ComicLists)
         {
-            comicList.Items ??= [];
-            comicList.Matchers ??= [];
+            EnsureComicListDefaults(comicList);
         }
 
         var defaultSettings = CreateDefaultSettings();
@@ -193,6 +196,7 @@ public sealed class SettingsService : ISettingsService
 
             existingTopLevelList.Items ??= [];
             existingTopLevelList.Matchers ??= [];
+            EnsureComicListDefaults(existingTopLevelList);
 
             foreach (var defaultChild in defaultList.Items)
             {
@@ -218,7 +222,7 @@ public sealed class SettingsService : ISettingsService
 
         return new AppSettings
         {
-            Version = 1,
+            Version = 2,
             LastUpdatedUtc = now,
             DatabasePath = GetDefaultDatabasePath(),
             ThumbnailCacheDirectory = GetDefaultThumbnailCacheDirectory(),
@@ -227,6 +231,8 @@ public sealed class SettingsService : ISettingsService
             ScanBatchSize = DefaultScanBatchSize,
             ScanWorkerCount = Math.Min(4, Environment.ProcessorCount),
             ScanStatusUpdateIntervalMs = DefaultScanStatusUpdateIntervalMs,
+            ConfirmCbzConversion = true,
+            SendOriginalToRecycleBinOnCbzConversion = false,
             LibraryFolders = [],
             ComicLists =
             [
@@ -235,6 +241,7 @@ public sealed class SettingsService : ISettingsService
                     Id = Guid.Parse("546b0bee-c659-4984-960f-35536acc1b5b"),
                     Type = "ComicLibraryListItem",
                     Name = "Library",
+                    MatchMode = "All",
                     BookCount = 0,
                     NewBookCount = 0,
                     NewBookCountDateUtc = now
@@ -244,6 +251,7 @@ public sealed class SettingsService : ISettingsService
                     Id = Guid.Parse("0e980233-c78a-48c9-946e-49a3fdbcee09"),
                     Type = "ComicListItemFolder",
                     Name = "Smart Lists",
+                    MatchMode = "All",
                     BookCount = 0,
                     NewBookCount = 0,
                     NewBookCountDateUtc = now,
@@ -305,6 +313,7 @@ public sealed class SettingsService : ISettingsService
                     Type = "ComicListItemFolder",
                     Name = "Temporary Lists",
                     Temporary = true,
+                    MatchMode = "All",
                     NewBookCountDateUtc = now
                 }
             ]
@@ -341,6 +350,7 @@ public sealed class SettingsService : ISettingsService
             Id = Guid.Parse(id),
             Type = "ComicSmartListItem",
             Name = name,
+            MatchMode = "All",
             BookCount = 0,
             NewBookCount = 0,
             NewBookCountDateUtc = now,
@@ -351,9 +361,84 @@ public sealed class SettingsService : ISettingsService
                     MatcherType = matcherType,
                     MatchOperator = matchOperator,
                     MatchValue = matchValue,
-                    MatchValue2 = matchValue2
+                    MatchValue2 = matchValue2,
+                    MatchValueText = matchValue?.ToString(),
+                    MatchValueText2 = matchValue2?.ToString()
                 }
             ]
+        };
+    }
+
+    private static void EnsureComicListDefaults(ComicListItem comicList)
+    {
+        comicList.MatchMode = string.Equals(comicList.MatchMode, "Any", StringComparison.OrdinalIgnoreCase)
+            ? "Any"
+            : "All";
+        comicList.Items ??= [];
+        comicList.Matchers ??= [];
+
+        foreach (var matcher in comicList.Matchers)
+        {
+            matcher.MatcherType ??= string.Empty;
+            if (string.IsNullOrWhiteSpace(matcher.MatchValueText) && matcher.MatchValue.HasValue)
+            {
+                matcher.MatchValueText = matcher.MatchValue.Value.ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(matcher.MatchValueText2) && matcher.MatchValue2.HasValue)
+            {
+                matcher.MatchValueText2 = matcher.MatchValue2.Value.ToString();
+            }
+        }
+
+        if (comicList.Expression is null &&
+            comicList.Matchers.Count > 0 &&
+            string.Equals(comicList.Type, "ComicSmartListItem", StringComparison.OrdinalIgnoreCase))
+        {
+            comicList.Expression = new SmartListExpressionNode
+            {
+                NodeType = "Group",
+                MatchMode = comicList.MatchMode,
+                Children = comicList.Matchers.Select(ToLegacyExpressionNode).ToList()
+            };
+        }
+
+        foreach (var child in comicList.Items)
+        {
+            EnsureComicListDefaults(child);
+        }
+    }
+
+
+    private static SmartListExpressionNode ToLegacyExpressionNode(ComicBookMatcher matcher)
+    {
+        var field = matcher.MatcherType
+            .Replace("ComicBook", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Matcher", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Trim();
+
+        var op = matcher.MatchOperator switch
+        {
+            1 => "is",
+            2 => "contains",
+            3 => "contains any of",
+            4 => "contains all of",
+            5 => "starts with",
+            6 => "ends with",
+            7 => "list contains",
+            8 => "regular expression",
+            _ => "contains"
+        };
+
+        return new SmartListExpressionNode
+        {
+            NodeType = "Rule",
+            Not = matcher.Not,
+            Field = string.IsNullOrWhiteSpace(field) ? "All" : field,
+            Operator = op,
+            Value1 = matcher.MatchValueText ?? matcher.MatchValue?.ToString(),
+            Value2 = matcher.MatchValueText2 ?? matcher.MatchValue2?.ToString(),
+            ValueKind = "Unknown"
         };
     }
 }

@@ -34,6 +34,10 @@ public sealed class AppSettings
     public int ScanWorkerCount { get; set; } = Math.Min(4, Environment.ProcessorCount);
 
     public int ScanStatusUpdateIntervalMs { get; set; } = 100;
+
+    public bool ConfirmCbzConversion { get; set; } = true;
+
+    public bool SendOriginalToRecycleBinOnCbzConversion { get; set; } = false;
 }
 
 public sealed class ComicListItem
@@ -52,6 +56,12 @@ public sealed class ComicListItem
 
     public DateTimeOffset? NewBookCountDateUtc { get; set; }
 
+    public string MatchMode { get; set; } = "All";
+
+    public string? QueryText { get; set; }
+
+    public SmartListExpressionNode? Expression { get; set; }
+
     public List<ComicListItem> Items { get; set; } = [];
 
     public List<ComicBookMatcher> Matchers { get; set; } = [];
@@ -61,11 +71,38 @@ public sealed class ComicBookMatcher
 {
     public string MatcherType { get; set; } = string.Empty;
 
+    public bool Not { get; set; }
+
     public int? MatchOperator { get; set; }
 
     public int? MatchValue { get; set; }
 
     public int? MatchValue2 { get; set; }
+
+    public string? MatchValueText { get; set; }
+
+    public string? MatchValueText2 { get; set; }
+}
+
+public sealed class SmartListExpressionNode
+{
+    public string NodeType { get; set; } = "Group";
+
+    public bool Not { get; set; }
+
+    public string MatchMode { get; set; } = "All";
+
+    public string Field { get; set; } = "All";
+
+    public string Operator { get; set; } = "contains";
+
+    public string? Value1 { get; set; }
+
+    public string? Value2 { get; set; }
+
+    public string ValueKind { get; set; } = "Unknown";
+
+    public List<SmartListExpressionNode> Children { get; set; } = [];
 }
 
 [JsonConverter(typeof(LibraryFolderSettingJsonConverter))]

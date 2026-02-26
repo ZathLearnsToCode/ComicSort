@@ -38,7 +38,14 @@ namespace ComicSort.UI
                     services.AddSingleton<IArchiveImageService, SevenZipArchiveImageService>();
                     services.AddSingleton<IThumbnailCacheService, ThumbnailCacheService>();
                     services.AddSingleton<IScanService, ScanService>();
+                    services.AddSingleton<IComicConversionService, ComicConversionService>();
                     services.AddSingleton<IComicRackImportService, ComicRackImportService>();
+                    services.AddSingleton<ISmartListParser, SmartListParser>();
+                    services.AddSingleton<ISmartListSerializer, SmartListSerializer>();
+                    services.AddSingleton<ISmartListEvaluator, SmartListEvaluator>();
+                    services.AddSingleton<ISmartListSqlCompiler, SmartListSqlCompiler>();
+                    services.AddSingleton<ISmartListExpressionService, SmartListExpressionService>();
+                    services.AddSingleton<ISmartListExecutionService, SmartListExecutionService>();
 
 
                     services.AddTransient<MainWindowViewModel>();

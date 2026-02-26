@@ -112,6 +112,11 @@
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Grid.ContextMenu>
                                         <ContextMenu>
+                                            <MenuItem Header="Edit Smart List"
+                                                      Command="{Binding #Root.DataContext.EditSmartListCommand}"
+                                                      CommandParameter="{Binding}"
+                                                      IsVisible="{Binding !IsHeader}" />
+                                            <Separator IsVisible="{Binding !IsHeader}" />
                                             <MenuItem Header="Rename"
                                                       Command="{Binding #Root.DataContext.RenameSmartListCommand}"
                                                       CommandParameter="{Binding}"

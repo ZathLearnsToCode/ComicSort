@@ -2,6 +2,7 @@ using ComicSort.Engine.Services;
 using ComicSort.UI.Models;
 using ComicSort.UI.ViewModels.Controls;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ComicSort.UI.ViewModels;
 
@@ -24,6 +25,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         TopToolbar = new TopToolbarViewModel();
         TopToolbar.GroupingSelectionChanged += OnGroupingSelectionChanged;
         Sidebar = sidebarViewModel;
+        Sidebar.ActiveFilterChanged += OnSidebarActiveFilterChanged;
         SeriesPane = new ExplorerPaneViewModel("Series", CreateSeriesPaneData());
         DirectoryPane = new ExplorerPaneViewModel("Title", CreateDirectoryPaneData());
         PublisherPane = new ExplorerPaneViewModel("Publisher", CreatePublisherPaneData());
@@ -57,6 +59,20 @@ public sealed class MainWindowViewModel : ViewModelBase
     private void OnGroupingSelectionChanged(object? sender, System.EventArgs e)
     {
         ComicGrid.ApplyGrouping(TopToolbar.GetGroupingSelection());
+    }
+
+    private async void OnSidebarActiveFilterChanged(object? sender, ComicGridFilterRequest request)
+    {
+        if (request.Mode == ComicGridFilterMode.AllComics)
+        {
+            await ComicGrid.ClearSmartListAsync();
+            return;
+        }
+
+        if (request.SmartList is not null)
+        {
+            await ComicGrid.ApplySmartListAsync(request.SmartList);
+        }
     }
 
     private static IReadOnlyDictionary<string, IReadOnlyList<NamedCountItemModel>> CreateSeriesPaneData() =>

@@ -2,8 +2,11 @@ using Avalonia.Threading;
 using Avalonia.Media.Imaging;
 using ComicSort.Engine.Models;
 using ComicSort.Engine.Services;
+using ComicSort.Engine.Settings;
 using ComicSort.UI.Models;
+using ComicSort.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,23 +23,45 @@ public sealed partial class ComicGridViewModel : ViewModelBase
 
     private readonly IComicDatabaseService _comicDatabaseService;
     private readonly IScanRepository _scanRepository;
+    private readonly ISmartListExecutionService _smartListExecutionService;
+    private readonly ISmartListEvaluator _smartListEvaluator;
+    private readonly ISmartListExpressionService _smartListExpressionService;
+    private readonly IComicConversionService _comicConversionService;
+    private readonly IDialogService _dialogService;
+    private readonly ISettingsService _settingsService;
     private readonly Dictionary<string, ComicTileModel> _itemIndex = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _loadLock = new(1, 1);
     private readonly List<string> _activeGrouping = ["Not Grouped"];
     private int _initialized;
+    private bool _smartListFilterActive;
+    private MatcherGroupNode? _activeSmartListExpression;
+    private string _activeSmartListName = "All Comics";
 
     public ComicGridViewModel(
         IComicDatabaseService comicDatabaseService,
         IScanRepository scanRepository,
+        ISmartListExecutionService smartListExecutionService,
+        ISmartListEvaluator smartListEvaluator,
+        ISmartListExpressionService smartListExpressionService,
+        IComicConversionService comicConversionService,
+        IDialogService dialogService,
+        ISettingsService settingsService,
         IScanService scanService)
     {
         _comicDatabaseService = comicDatabaseService;
         _scanRepository = scanRepository;
+        _smartListExecutionService = smartListExecutionService;
+        _smartListEvaluator = smartListEvaluator;
+        _smartListExpressionService = smartListExpressionService;
+        _comicConversionService = comicConversionService;
+        _dialogService = dialogService;
+        _settingsService = settingsService;
         scanService.ComicFileSaved += OnComicFileSaved;
     }
 
     public ObservableCollection<ComicTileModel> Items { get; } = [];
     public ObservableCollection<ComicGroupModel> Groups { get; } = [];
+    public ObservableCollection<ComicTileModel> SelectedItems { get; } = [];
 
     [ObservableProperty]
     private ComicTileModel? selectedItem;
@@ -44,9 +69,16 @@ public sealed partial class ComicGridViewModel : ViewModelBase
     [ObservableProperty]
     private bool isGroupedView;
 
+    [ObservableProperty]
+    private string filterSummary = "Filter: All Comics";
+
+    [ObservableProperty]
+    private bool isConvertingToCbz;
+
     public bool IsFlatView => !IsGroupedView;
 
     public event EventHandler<ComicTileModel?>? SelectedItemChanged;
+    public event EventHandler<string>? FilterSummaryChanged;
 
     public async Task InitializeAsync()
     {
@@ -97,26 +129,19 @@ public sealed partial class ComicGridViewModel : ViewModelBase
     private async Task LoadInitialAsync()
     {
         await _comicDatabaseService.InitializeAsync();
-        var items = await _scanRepository.GetLibraryItemsAsync(InitialLoadSize);
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        if (_smartListFilterActive && _activeSmartListExpression is not null)
         {
-            Items.Clear();
-            _itemIndex.Clear();
+            var smartResult = await _smartListExecutionService.ExecuteAsync(
+                _activeSmartListExpression,
+                InitialLoadSize);
+            await PopulateItemsAsync(smartResult.Items);
+            SetFilterSummary($"Filter: {_activeSmartListName} ({smartResult.LoadedCount})");
+            return;
+        }
 
-            foreach (var item in items)
-            {
-                var tile = ToTile(item);
-                _itemIndex[item.FilePath] = tile;
-                Items.Add(tile);
-            }
-
-            RebuildGroupingView();
-
-            if (SelectedItem is null && Items.Count > 0)
-            {
-                SelectedItem = Items[0];
-            }
-        });
+        var items = await _scanRepository.GetLibraryItemsAsync(InitialLoadSize);
+        await PopulateItemsAsync(items);
+        SetFilterSummary($"Filter: All Comics ({items.Count})");
     }
 
     private void OnComicFileSaved(object? sender, ComicFileSavedEventArgs eventArgs)
@@ -124,6 +149,30 @@ public sealed partial class ComicGridViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() =>
         {
             var item = eventArgs.Item;
+            if (_smartListFilterActive && _activeSmartListExpression is not null)
+            {
+                var projection = ToProjection(item);
+                var isMatch = _smartListEvaluator.IsMatch(_activeSmartListExpression, projection);
+                if (!isMatch)
+                {
+                    if (_itemIndex.TryGetValue(item.FilePath, out var existing))
+                    {
+                        Items.Remove(existing);
+                        _itemIndex.Remove(item.FilePath);
+                        SelectedItems.Remove(existing);
+                        if (ReferenceEquals(SelectedItem, existing))
+                        {
+                            SelectedItem = Items.FirstOrDefault();
+                            SetSelectedItems(SelectedItem is null ? [] : [SelectedItem]);
+                        }
+                    }
+
+                    RebuildGroupingView();
+                    SetFilterSummary($"Filter: {_activeSmartListName} ({Items.Count})");
+                    return;
+                }
+            }
+
             if (_itemIndex.TryGetValue(item.FilePath, out var existingTile))
             {
                 existingTile.DisplayTitle = item.DisplayTitle;
@@ -144,8 +193,49 @@ public sealed partial class ComicGridViewModel : ViewModelBase
             _itemIndex[item.FilePath] = newTile;
             Items.Add(newTile);
             SelectedItem ??= newTile;
+            if (SelectedItems.Count == 0 && SelectedItem is not null)
+            {
+                SelectedItems.Add(SelectedItem);
+                ConvertToCbzCommand.NotifyCanExecuteChanged();
+            }
+
             RebuildGroupingView();
+            SetFilterSummary($"Filter: {(_smartListFilterActive ? _activeSmartListName : "All Comics")} ({Items.Count})");
         });
+    }
+
+    public async Task ApplySmartListAsync(ComicListItem listModel, CancellationToken cancellationToken = default)
+    {
+        var expression = _smartListExpressionService.ResolveExpression(listModel);
+        _smartListFilterActive = true;
+        _activeSmartListExpression = expression;
+        _activeSmartListName = string.IsNullOrWhiteSpace(listModel.Name) ? "Smart List" : listModel.Name.Trim();
+
+        await _loadLock.WaitAsync(cancellationToken);
+        try
+        {
+            var result = await _smartListExecutionService.ExecuteAsync(
+                expression,
+                InitialLoadSize,
+                cancellationToken);
+
+            await PopulateItemsAsync(result.Items);
+            SetFilterSummary($"Filter: {_activeSmartListName} ({result.LoadedCount})");
+        }
+        finally
+        {
+            _loadLock.Release();
+        }
+    }
+
+    public async Task ClearSmartListAsync(CancellationToken cancellationToken = default)
+    {
+        _smartListFilterActive = false;
+        _activeSmartListExpression = null;
+        _activeSmartListName = "All Comics";
+
+        await ReloadAsync();
+        SetFilterSummary($"Filter: All Comics ({Items.Count})");
     }
 
     public void ApplyGrouping(IReadOnlyList<string> grouping)
@@ -158,6 +248,176 @@ public sealed partial class ComicGridViewModel : ViewModelBase
 
         _activeGrouping.Clear();
         _activeGrouping.AddRange(normalized);
+        RebuildGroupingView();
+    }
+
+    public void SetSelectedItems(IReadOnlyList<ComicTileModel> selectedItems)
+    {
+        SelectedItems.Clear();
+        foreach (var item in selectedItems
+                     .Where(x => x is not null)
+                     .Distinct())
+        {
+            SelectedItems.Add(item);
+        }
+
+        ConvertToCbzCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanConvertToCbz))]
+    private async Task ConvertToCbzAsync(ComicTileModel? contextItem)
+    {
+        var conversionTargets = ResolveConversionTargets(contextItem);
+        if (conversionTargets.Count == 0)
+        {
+            return;
+        }
+
+        await _settingsService.InitializeAsync();
+
+        var settings = _settingsService.CurrentSettings;
+        var sendOriginalToRecycleBin = settings.SendOriginalToRecycleBinOnCbzConversion;
+
+        if (settings.ConfirmCbzConversion)
+        {
+            var confirmation = await _dialogService.ShowCbzConversionConfirmationDialogAsync(
+                conversionTargets.Count,
+                sendOriginalToRecycleBin);
+            if (confirmation is null)
+            {
+                return;
+            }
+
+            sendOriginalToRecycleBin = confirmation.SendOriginalToRecycleBin;
+            settings.SendOriginalToRecycleBinOnCbzConversion = confirmation.SendOriginalToRecycleBin;
+            if (confirmation.DontAskAgain)
+            {
+                settings.ConfirmCbzConversion = false;
+            }
+
+            await _settingsService.SaveAsync();
+        }
+
+        IsConvertingToCbz = true;
+        try
+        {
+            var sourcePaths = conversionTargets
+                .Select(x => x.FilePath)
+                .ToArray();
+            var conversionResult = await _comicConversionService.ConvertToCbzAsync(
+                sourcePaths,
+                new CbzConversionOptions
+                {
+                    SendOriginalToRecycleBin = sendOriginalToRecycleBin
+                });
+
+            foreach (var convertedFile in conversionResult.Files.Where(x => x.Success))
+            {
+                if (convertedFile.DestinationPath is null)
+                {
+                    continue;
+                }
+
+                var sourceTile = conversionTargets.FirstOrDefault(x =>
+                    string.Equals(x.FilePath, convertedFile.SourcePath, StringComparison.OrdinalIgnoreCase));
+                if (sourceTile is null)
+                {
+                    continue;
+                }
+
+                ApplyConversionSuccess(sourceTile, convertedFile.DestinationPath, convertedFile.OriginalRemoved);
+            }
+
+            SetFilterSummary(
+                $"Filter: {(_smartListFilterActive ? _activeSmartListName : "All Comics")} ({Items.Count}) | Converted {conversionResult.SuccessCount}, Failed {conversionResult.FailureCount}");
+        }
+        finally
+        {
+            IsConvertingToCbz = false;
+        }
+    }
+
+    private bool CanConvertToCbz(ComicTileModel? contextItem)
+    {
+        if (IsConvertingToCbz)
+        {
+            return false;
+        }
+
+        if (contextItem is not null)
+        {
+            return true;
+        }
+
+        return SelectedItems.Count > 0 || SelectedItem is not null;
+    }
+
+    private List<ComicTileModel> ResolveConversionTargets(ComicTileModel? contextItem)
+    {
+        if (contextItem is not null)
+        {
+            if (SelectedItems.Any(x => string.Equals(x.FilePath, contextItem.FilePath, StringComparison.OrdinalIgnoreCase)))
+            {
+                return SelectedItems
+                    .Distinct()
+                    .ToList();
+            }
+
+            return [contextItem];
+        }
+
+        if (SelectedItems.Count > 0)
+        {
+            return SelectedItems
+                .Distinct()
+                .ToList();
+        }
+
+        return SelectedItem is null ? [] : [SelectedItem];
+    }
+
+    private void ApplyConversionSuccess(ComicTileModel sourceTile, string destinationPath, bool originalRemoved)
+    {
+        var normalizedDestinationPath = Path.GetFullPath(destinationPath).Trim();
+        var destinationDirectory = Path.GetDirectoryName(normalizedDestinationPath) ?? string.Empty;
+
+        if (originalRemoved)
+        {
+            var oldPath = sourceTile.FilePath;
+            _itemIndex.Remove(oldPath);
+
+            sourceTile.FilePath = normalizedDestinationPath;
+            sourceTile.FileDirectory = destinationDirectory;
+            sourceTile.DisplayTitle = Path.GetFileNameWithoutExtension(normalizedDestinationPath);
+            sourceTile.FileTypeTag = "CBZ";
+            sourceTile.LastScannedUtc = DateTimeOffset.UtcNow;
+
+            _itemIndex[normalizedDestinationPath] = sourceTile;
+            RebuildGroupingView();
+            return;
+        }
+
+        if (_itemIndex.ContainsKey(normalizedDestinationPath))
+        {
+            return;
+        }
+
+        var duplicateTile = new ComicTileModel
+        {
+            FilePath = normalizedDestinationPath,
+            FileDirectory = destinationDirectory,
+            DisplayTitle = Path.GetFileNameWithoutExtension(normalizedDestinationPath),
+            Series = sourceTile.Series,
+            Publisher = sourceTile.Publisher,
+            ThumbnailPath = sourceTile.ThumbnailPath,
+            ThumbnailImage = sourceTile.ThumbnailImage,
+            IsThumbnailReady = sourceTile.IsThumbnailReady,
+            FileTypeTag = "CBZ",
+            LastScannedUtc = DateTimeOffset.UtcNow
+        };
+
+        Items.Insert(0, duplicateTile);
+        _itemIndex[normalizedDestinationPath] = duplicateTile;
         RebuildGroupingView();
     }
 
@@ -178,6 +438,32 @@ public sealed partial class ComicGridViewModel : ViewModelBase
             FileTypeTag = item.FileTypeTag,
             LastScannedUtc = item.LastScannedUtc
         };
+    }
+
+    private async Task PopulateItemsAsync(IReadOnlyList<ComicLibraryItem> items)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            Items.Clear();
+            _itemIndex.Clear();
+            SelectedItems.Clear();
+
+            foreach (var item in items)
+            {
+                var tile = ToTile(item);
+                _itemIndex[item.FilePath] = tile;
+                Items.Add(tile);
+            }
+
+            RebuildGroupingView();
+            SelectedItem = Items.FirstOrDefault();
+            if (SelectedItem is not null)
+            {
+                SelectedItems.Add(SelectedItem);
+            }
+
+            ConvertToCbzCommand.NotifyCanExecuteChanged();
+        });
     }
 
     private void RebuildGroupingView()
@@ -294,5 +580,36 @@ public sealed partial class ComicGridViewModel : ViewModelBase
     partial void OnSelectedItemChanged(ComicTileModel? value)
     {
         SelectedItemChanged?.Invoke(this, value);
+        ConvertToCbzCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsConvertingToCbzChanged(bool value)
+    {
+        ConvertToCbzCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SetFilterSummary(string summary)
+    {
+        FilterSummary = summary;
+        FilterSummaryChanged?.Invoke(this, summary);
+    }
+
+    private static ComicLibraryProjection ToProjection(ComicLibraryItem item)
+    {
+        return new ComicLibraryProjection
+        {
+            FilePath = item.FilePath,
+            FileName = Path.GetFileName(item.FilePath),
+            FileDirectory = string.IsNullOrWhiteSpace(item.FileDirectory)
+                ? (Path.GetDirectoryName(item.FilePath) ?? string.Empty)
+                : item.FileDirectory,
+            DisplayTitle = item.DisplayTitle,
+            Extension = Path.GetExtension(item.FilePath),
+            Series = item.Series,
+            Publisher = item.Publisher,
+            ThumbnailPath = item.ThumbnailPath,
+            HasThumbnail = item.IsThumbnailReady,
+            LastScannedUtc = item.LastScannedUtc
+        };
     }
 }

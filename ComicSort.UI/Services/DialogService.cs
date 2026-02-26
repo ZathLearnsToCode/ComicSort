@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using ComicSort.Engine.Services;
+using ComicSort.UI.Models.Dialogs;
 using ComicSort.UI.ViewModels.Dialogs;
 using ComicSort.UI.Views.Dialogs;
 using System.Linq;
@@ -66,6 +67,40 @@ public sealed class DialogService : IDialogService
         };
 
         return await dialog.ShowDialog<bool>(owner);
+    }
+
+    public async Task<SmartListEditorResult?> ShowSmartListEditorDialogAsync(SmartListEditorResult initialState)
+    {
+        if (GetActiveWindow() is not { } owner)
+        {
+            return null;
+        }
+
+        var dialog = new SmartListEditorDialog
+        {
+            DataContext = new SmartListEditorDialogViewModel(initialState)
+        };
+
+        return await dialog.ShowDialog<SmartListEditorResult?>(owner);
+    }
+
+    public async Task<CbzConversionConfirmationResult?> ShowCbzConversionConfirmationDialogAsync(
+        int fileCount,
+        bool sendOriginalToRecycleBinDefault)
+    {
+        if (GetActiveWindow() is not { } owner)
+        {
+            return null;
+        }
+
+        var dialog = new CbzConversionConfirmationDialog
+        {
+            DataContext = new CbzConversionConfirmationDialogViewModel(
+                fileCount,
+                sendOriginalToRecycleBinDefault)
+        };
+
+        return await dialog.ShowDialog<CbzConversionConfirmationResult?>(owner);
     }
 
     private static IStorageProvider? GetStorageProvider()

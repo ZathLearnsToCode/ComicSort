@@ -1,0 +1,202 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:ComicSort.UI.ViewModels.Dialogs"
+        x:Class="ComicSort.UI.Views.Dialogs.SmartListEditorDialog"
+        x:DataType="vm:SmartListEditorDialogViewModel"
+        x:Name="Root"
+        Width="980"
+        Height="510"
+        MinWidth="860"
+        MinHeight="430"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Title="Edit Smart List"
+        Background="{DynamicResource Theme.BackgroundBrush}"
+        Foreground="{DynamicResource Theme.PrimaryTextBrush}"
+        mc:Ignorable="d"
+        d:DesignWidth="980"
+        d:DesignHeight="510">
+
+    <Border Margin="10"
+            Padding="10"
+            BorderBrush="{DynamicResource Theme.BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Background="{DynamicResource Theme.SurfaceBrush}">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
+              RowSpacing="8">
+            <Grid ColumnDefinitions="Auto,*,Auto"
+                  ColumnSpacing="8">
+                <TextBlock Text="Name:"
+                           VerticalAlignment="Center"
+                           Margin="2,0,0,0" />
+                <TextBox Grid.Column="1"
+                         Text="{Binding Name, Mode=TwoWay}"
+                         Watermark="New Smart List" />
+                <Button Grid.Column="2"
+                        Width="24"
+                        Content="^"
+                        ToolTip.Tip="Toggle advanced options"
+                        Command="{Binding ToggleShowAdvancedOptionsCommand}" />
+            </Grid>
+
+            <Grid Grid.Row="1"
+                  ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12"
+                  IsVisible="{Binding ShowAdvancedOptions}">
+                <StackPanel>
+                    <TextBlock Text="Notes:"
+                               Margin="0,0,0,4" />
+                    <TextBox Text="{Binding Notes, Mode=TwoWay}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="90"
+                             VerticalContentAlignment="Top" />
+                </StackPanel>
+                <StackPanel Grid.Column="1"
+                            Spacing="8"
+                            MinWidth="170">
+                    <CheckBox Content="Show in Quick Open"
+                              IsChecked="{Binding ShowInQuickOpen, Mode=TwoWay}" />
+                    <CheckBox Content="Limit to"
+                              IsChecked="{Binding LimitToBooksEnabled, Mode=TwoWay}" />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="6"
+                                IsEnabled="{Binding LimitToBooksEnabled}">
+                        <NumericUpDown Value="{Binding LimitBookCount, Mode=TwoWay}"
+                                       Minimum="1"
+                                       Maximum="9999"
+                                       Width="72" />
+                        <TextBlock Text="Books"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <Border Grid.Row="2"
+                    BorderBrush="{DynamicResource Theme.BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="6">
+                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*"
+                      ColumnSpacing="8">
+                    <Button Content="!"
+                            Width="24"
+                            Height="24"
+                            IsEnabled="False" />
+                    <TextBlock Grid.Column="1"
+                               Text="Match"
+                               VerticalAlignment="Center" />
+                    <ComboBox Grid.Column="2"
+                              Width="70"
+                              ItemsSource="{Binding MatchModes}"
+                              SelectedItem="{Binding SelectedGlobalMatchMode, Mode=TwoWay}" />
+                    <TextBlock Grid.Column="3"
+                               Text="of the following rules on"
+                               VerticalAlignment="Center" />
+                    <ComboBox Grid.Column="4"
+                              HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding ScopeOptions}"
+                              SelectedItem="{Binding SelectedScope, Mode=TwoWay}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="3"
+                    BorderBrush="{DynamicResource Theme.BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="6">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Rules}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SmartListRuleEditorRowViewModel">
+                                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
+                                      ColumnSpacing="8"
+                                      Margin="0,0,0,6">
+                                    <Button Content="!"
+                                            Width="24"
+                                            Height="24"
+                                            FontWeight="Bold"
+                                            Command="{Binding #Root.DataContext.ToggleRuleNegationCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                    <ComboBox Grid.Column="1"
+                                              Width="140"
+                                              ItemsSource="{Binding #Root.DataContext.MatchModes}"
+                                              SelectedItem="{Binding SelectedMatchMode, Mode=TwoWay}"
+                                              IsVisible="{Binding IsGroupHeader}" />
+
+                                    <Button Grid.Column="1"
+                                            Content="{Binding SelectedField}"
+                                            HorizontalContentAlignment="Left"
+                                            Click="RuleFieldButton_OnClick"
+                                            IsVisible="{Binding !IsGroupHeader}" />
+
+                                    <TextBlock Grid.Column="2"
+                                               Text="of the following rules:"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding IsGroupHeader}" />
+
+                                    <ComboBox Grid.Column="2"
+                                              Width="130"
+                                              ItemsSource="{Binding #Root.DataContext.OperatorOptions}"
+                                              SelectedItem="{Binding SelectedOperator, Mode=TwoWay}"
+                                              IsVisible="{Binding !IsGroupHeader}" />
+
+                                    <TextBox Grid.Column="3"
+                                             Text="{Binding Value, Mode=TwoWay}"
+                                             Watermark="Value"
+                                             IsVisible="{Binding !IsGroupHeader}" />
+
+                                    <Button Grid.Column="4"
+                                            Width="24"
+                                            Height="24"
+                                            Content="v"
+                                            Click="RuleActionsButton_OnClick" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <Grid Grid.Row="4"
+                  ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto"
+                  ColumnSpacing="8">
+                <Button Content="Previous"
+                        Command="{Binding PreviousCommand}"
+                        MinWidth="80"
+                        IsEnabled="False" />
+                <Button Grid.Column="1"
+                        Content="Next"
+                        Command="{Binding NextCommand}"
+                        MinWidth="80" />
+                <Button Grid.Column="2"
+                        Content="Query"
+                        Command="{Binding QueryCommand}"
+                        MinWidth="80" />
+                <TextBlock Grid.Column="3"
+                           Text="{Binding StatusText}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Theme.SecondaryTextBrush}"
+                           TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="4"
+                        Content="OK"
+                        Command="{Binding OkCommand}"
+                        MinWidth="80"
+                        Background="{DynamicResource Theme.AccentBrush}"
+                        Foreground="{DynamicResource Theme.OnAccentBrush}" />
+                <Button Grid.Column="5"
+                        Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        MinWidth="80" />
+                <Button Grid.Column="6"
+                        Content="Apply"
+                        Command="{Binding ApplyCommand}"
+                        MinWidth="80" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

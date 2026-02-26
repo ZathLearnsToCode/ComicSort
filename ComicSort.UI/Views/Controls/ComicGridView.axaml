@@ -3,6 +3,7 @@
              xmlns:vm="using:ComicSort.UI.ViewModels.Controls"
              xmlns:model="using:ComicSort.UI.Models"
              x:Class="ComicSort.UI.Views.Controls.ComicGridView"
+             x:Name="Root"
              x:DataType="vm:ComicGridViewModel">
 
     <Border Background="{DynamicResource Theme.SurfaceBrush}"
@@ -11,10 +12,12 @@
             CornerRadius="8"
             Padding="8">
         <Grid>
-            <ListBox ItemsSource="{Binding Items}"
+            <ListBox x:Name="FlatListBox"
+                     ItemsSource="{Binding Items}"
                      IsVisible="{Binding IsFlatView}"
                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                     SelectionMode="Single"
+                     SelectionMode="Multiple"
+                     SelectionChanged="FlatListBox_OnSelectionChanged"
                      BorderThickness="0"
                      Background="Transparent">
                 <ListBox.Styles>
@@ -48,6 +51,13 @@
                         <StackPanel Width="92"
                                     Margin="4"
                                     Spacing="4">
+                            <StackPanel.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Convert to CBZ"
+                                              Command="{Binding #Root.DataContext.ConvertToCbzCommand}"
+                                              CommandParameter="{Binding}" />
+                                </ContextMenu>
+                            </StackPanel.ContextMenu>
                             <Border Height="132"
                                     CornerRadius="4"
                                     BorderThickness="1"
@@ -96,7 +106,7 @@
                                                TextWrapping="Wrap" />
                                 </Expander.Header>
                                 <ListBox ItemsSource="{Binding Items}"
-                                         SelectionMode="Single"
+                                         SelectionMode="Multiple"
                                          SelectionChanged="GroupedListBox_OnSelectionChanged"
                                          BorderThickness="0"
                                          Background="Transparent">
@@ -131,6 +141,13 @@
                                             <StackPanel Width="92"
                                                         Margin="4"
                                                         Spacing="4">
+                                                <StackPanel.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Convert to CBZ"
+                                                                  Command="{Binding #Root.DataContext.ConvertToCbzCommand}"
+                                                                  CommandParameter="{Binding}" />
+                                                    </ContextMenu>
+                                                </StackPanel.ContextMenu>
                                                 <Border Height="132"
                                                         CornerRadius="4"
                                                         BorderThickness="1"
