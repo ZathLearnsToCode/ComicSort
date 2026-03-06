@@ -6,6 +6,7 @@ using ComicSort.Engine.Services;
 using ComicSort.UI.Models.Dialogs;
 using ComicSort.UI.ViewModels.Dialogs;
 using ComicSort.UI.Views.Dialogs;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,6 +53,22 @@ public sealed class DialogService : IDialogService
         });
 
         return results.FirstOrDefault()?.TryGetLocalPath();
+    }
+
+    public async Task<IReadOnlyList<string>?> ShowTargetedScanFolderSelectionDialogAsync(
+        IReadOnlyList<string> availableFolders)
+    {
+        if (GetActiveWindow() is not { } owner)
+        {
+            return null;
+        }
+
+        var dialog = new TargetedScanFolderSelectionDialog
+        {
+            DataContext = new TargetedScanFolderSelectionDialogViewModel(availableFolders)
+        };
+
+        return await dialog.ShowDialog<IReadOnlyList<string>?>(owner);
     }
 
     public async Task<bool> ShowSettingsDialogAsync()
@@ -101,6 +118,25 @@ public sealed class DialogService : IDialogService
         };
 
         return await dialog.ShowDialog<CbzConversionConfirmationResult?>(owner);
+    }
+
+    public async Task<LibraryDeleteConfirmationResult?> ShowLibraryDeleteConfirmationDialogAsync(
+        int fileCount,
+        bool sendToRecycleBinDefault)
+    {
+        if (GetActiveWindow() is not { } owner)
+        {
+            return null;
+        }
+
+        var dialog = new LibraryDeleteConfirmationDialog
+        {
+            DataContext = new LibraryDeleteConfirmationDialogViewModel(
+                fileCount,
+                sendToRecycleBinDefault)
+        };
+
+        return await dialog.ShowDialog<LibraryDeleteConfirmationResult?>(owner);
     }
 
     private static IStorageProvider? GetStorageProvider()

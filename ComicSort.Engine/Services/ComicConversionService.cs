@@ -1,23 +1,12 @@
 using ComicSort.Engine.Data;
 using ComicSort.Engine.Models;
 using Microsoft.VisualBasic.FileIO;
-using System.Diagnostics;
 using System.IO.Compression;
 
 namespace ComicSort.Engine.Services;
 
 public sealed class ComicConversionService : IComicConversionService
 {
-    private static readonly string[] SupportedImageExtensions =
-    [
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".webp",
-        ".gif",
-        ".bmp"
-    ];
-
     private static readonly HashSet<string> SupportedArchiveExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".cbr",
@@ -28,15 +17,18 @@ public sealed class ComicConversionService : IComicConversionService
     private readonly IScanRepository _scanRepository;
     private readonly IArchiveImageService _archiveImageService;
     private readonly IThumbnailCacheService _thumbnailCacheService;
+    private readonly IArchiveInspectorService _archiveInspectorService;
 
     public ComicConversionService(
         IScanRepository scanRepository,
         IArchiveImageService archiveImageService,
-        IThumbnailCacheService thumbnailCacheService)
+        IThumbnailCacheService thumbnailCacheService,
+        IArchiveInspectorService archiveInspectorService)
     {
         _scanRepository = scanRepository;
         _archiveImageService = archiveImageService;
         _thumbnailCacheService = thumbnailCacheService;
+        _archiveInspectorService = archiveInspectorService;
     }
 
     public async Task<CbzConversionBatchResult> ConvertToCbzAsync(
@@ -104,34 +96,18 @@ public sealed class ComicConversionService : IComicConversionService
             };
         }
 
-        var sevenZipPath = ResolveSevenZipPath();
-        if (string.IsNullOrWhiteSpace(sevenZipPath))
+        var inspection = await _archiveInspectorService.InspectAsync(sourcePath, cancellationToken);
+        if (!inspection.Success)
         {
             return new CbzConversionFileResult
             {
                 SourcePath = sourcePath,
                 Success = false,
-                Error = "7z executable was not found."
+                Error = inspection.Error ?? "Failed to inspect source archive."
             };
         }
 
-        var listResult = await ExecuteTextCommandAsync(
-            sevenZipPath,
-            ["l", "-slt", "-ba", sourcePath],
-            cancellationToken);
-
-        if (listResult.ExitCode != 0)
-        {
-            return new CbzConversionFileResult
-            {
-                SourcePath = sourcePath,
-                Success = false,
-                Error = $"Failed to read archive: {listResult.ErrorText}"
-            };
-        }
-
-        var imageEntries = FindImageEntries(listResult.OutputText, sourcePath);
-        if (imageEntries.Count == 0)
+        if (inspection.ImageEntryPaths.Count == 0)
         {
             return new CbzConversionFileResult
             {
@@ -140,7 +116,6 @@ public sealed class ComicConversionService : IComicConversionService
                 Error = "No images were found in the archive."
             };
         }
-        var comicInfoEntry = FindComicInfoEntry(listResult.OutputText, sourcePath);
 
         var targetPath = GetAvailableDestinationPath(Path.ChangeExtension(sourcePath, ".cbz"));
         var tempOutputPath = Path.Combine(
@@ -151,10 +126,9 @@ public sealed class ComicConversionService : IComicConversionService
         {
             await CreateCbzArchiveAsync(
                 sourcePath,
-                imageEntries,
-                comicInfoEntry,
+                inspection.ImageEntryPaths,
+                inspection.ComicInfoEntryPath,
                 tempOutputPath,
-                sevenZipPath,
                 cancellationToken);
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetPath) ?? Path.GetTempPath());
@@ -259,16 +233,14 @@ public sealed class ComicConversionService : IComicConversionService
         };
 
         var saveResult = await _scanRepository.UpsertBatchAsync([upsertModel], cancellationToken);
-
         return saveResult.SavedItems.FirstOrDefault();
     }
 
-    private static async Task CreateCbzArchiveAsync(
+    private async Task CreateCbzArchiveAsync(
         string sourcePath,
         IReadOnlyList<string> imageEntries,
         string? comicInfoEntry,
         string destinationPath,
-        string sevenZipPath,
         CancellationToken cancellationToken)
     {
         await using var outputStream = new FileStream(destinationPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
@@ -281,34 +253,26 @@ public sealed class ComicConversionService : IComicConversionService
             var sourceEntryPath = imageEntries[index];
             var extension = NormalizeImageExtension(Path.GetExtension(sourceEntryPath));
             var outputEntryPath = $"p{index + 1:00000}{extension}";
-            var extractResult = await ExecuteBinaryCommandAsync(
-                sevenZipPath,
-                ["e", "-so", "-y", sourcePath, sourceEntryPath],
-                cancellationToken);
+            var entryBytes = await _archiveInspectorService.ExtractEntryAsync(sourcePath, sourceEntryPath, cancellationToken);
 
-            if (extractResult.ExitCode != 0 || extractResult.OutputBytes.Length == 0)
+            if (entryBytes is null || entryBytes.Length == 0)
             {
-                throw new InvalidOperationException(
-                    $"Failed to extract '{sourceEntryPath}' from archive: {extractResult.ErrorText}");
+                throw new InvalidOperationException($"Failed to extract '{sourceEntryPath}' from archive.");
             }
 
             var outputEntry = outputArchive.CreateEntry(outputEntryPath, CompressionLevel.Optimal);
             await using var entryStream = outputEntry.Open();
-            await entryStream.WriteAsync(extractResult.OutputBytes, cancellationToken);
+            await entryStream.WriteAsync(entryBytes, cancellationToken);
         }
 
         if (!string.IsNullOrWhiteSpace(comicInfoEntry))
         {
-            var comicInfoResult = await ExecuteBinaryCommandAsync(
-                sevenZipPath,
-                ["e", "-so", "-y", sourcePath, comicInfoEntry],
-                cancellationToken);
-
-            if (comicInfoResult.ExitCode == 0 && comicInfoResult.OutputBytes.Length > 0)
+            var comicInfoBytes = await _archiveInspectorService.ExtractEntryAsync(sourcePath, comicInfoEntry, cancellationToken);
+            if (comicInfoBytes is not null && comicInfoBytes.Length > 0)
             {
                 var comicInfoOutputEntry = outputArchive.CreateEntry("ComicInfo.xml", CompressionLevel.Optimal);
                 await using var comicInfoStream = comicInfoOutputEntry.Open();
-                await comicInfoStream.WriteAsync(comicInfoResult.OutputBytes, cancellationToken);
+                await comicInfoStream.WriteAsync(comicInfoBytes, cancellationToken);
             }
         }
     }
@@ -334,118 +298,6 @@ public sealed class ComicConversionService : IComicConversionService
         }
 
         throw new IOException("Unable to select an available destination path for CBZ output.");
-    }
-
-    private static IReadOnlyList<string> FindImageEntries(string outputText, string archivePath)
-    {
-        var entries = new List<string>();
-        string? currentPath = null;
-        var currentIsFolder = false;
-        var normalizedArchivePath = Path.GetFullPath(archivePath);
-
-        foreach (var rawLine in outputText.Split('\n'))
-        {
-            var line = rawLine.TrimEnd('\r');
-
-            if (line.StartsWith("Path = ", StringComparison.Ordinal))
-            {
-                if (ShouldUseEntry(currentPath, currentIsFolder, normalizedArchivePath))
-                {
-                    entries.Add(currentPath!);
-                }
-
-                currentPath = line["Path = ".Length..].Trim();
-                currentIsFolder = false;
-                continue;
-            }
-
-            if (line.StartsWith("Folder = ", StringComparison.Ordinal))
-            {
-                currentIsFolder = line.EndsWith('+');
-            }
-        }
-
-        if (ShouldUseEntry(currentPath, currentIsFolder, normalizedArchivePath))
-        {
-            entries.Add(currentPath!);
-        }
-
-        return entries;
-    }
-
-    private static string? FindComicInfoEntry(string outputText, string archivePath)
-    {
-        string? currentPath = null;
-        var currentIsFolder = false;
-        var normalizedArchivePath = Path.GetFullPath(archivePath);
-
-        foreach (var rawLine in outputText.Split('\n'))
-        {
-            var line = rawLine.TrimEnd('\r');
-
-            if (line.StartsWith("Path = ", StringComparison.Ordinal))
-            {
-                if (IsComicInfoEntry(currentPath, currentIsFolder, normalizedArchivePath))
-                {
-                    return currentPath;
-                }
-
-                currentPath = line["Path = ".Length..].Trim();
-                currentIsFolder = false;
-                continue;
-            }
-
-            if (line.StartsWith("Folder = ", StringComparison.Ordinal))
-            {
-                currentIsFolder = line.EndsWith('+');
-            }
-        }
-
-        return IsComicInfoEntry(currentPath, currentIsFolder, normalizedArchivePath)
-            ? currentPath
-            : null;
-    }
-
-    private static bool ShouldUseEntry(string? entryPath, bool isFolder, string normalizedArchivePath)
-    {
-        if (string.IsNullOrWhiteSpace(entryPath) || isFolder)
-        {
-            return false;
-        }
-
-        if (Path.IsPathRooted(entryPath))
-        {
-            var normalizedEntry = Path.GetFullPath(entryPath);
-            if (string.Equals(normalizedEntry, normalizedArchivePath, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-        }
-
-        var extension = Path.GetExtension(entryPath);
-        return SupportedImageExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static bool IsComicInfoEntry(string? entryPath, bool isFolder, string normalizedArchivePath)
-    {
-        if (string.IsNullOrWhiteSpace(entryPath) || isFolder)
-        {
-            return false;
-        }
-
-        if (Path.IsPathRooted(entryPath))
-        {
-            var normalizedEntry = Path.GetFullPath(entryPath);
-            if (string.Equals(normalizedEntry, normalizedArchivePath, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-        }
-
-        return string.Equals(
-            Path.GetFileName(entryPath),
-            "ComicInfo.xml",
-            StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeImageExtension(string? extension)
@@ -482,17 +334,6 @@ public sealed class ComicConversionService : IComicConversionService
             UICancelOption.ThrowException);
     }
 
-    private static string? ResolveSevenZipPath()
-    {
-        var bundledPath = Path.Combine(AppContext.BaseDirectory, "Tools", "7zip", "7z.exe");
-        if (File.Exists(bundledPath))
-        {
-            return bundledPath;
-        }
-
-        return "7z";
-    }
-
     private static void TryDeleteFile(string path)
     {
         try
@@ -506,77 +347,5 @@ public sealed class ComicConversionService : IComicConversionService
         {
             // Swallow cleanup failures.
         }
-    }
-
-    private static async Task<(int ExitCode, string OutputText, string ErrorText)> ExecuteTextCommandAsync(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var process = BuildProcess(fileName, arguments);
-            process.Start();
-
-            var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-
-            await process.WaitForExitAsync(cancellationToken);
-            var outputText = await outputTask;
-            var errorText = await errorTask;
-
-            return (process.ExitCode, outputText, errorText);
-        }
-        catch (Exception ex)
-        {
-            return (-1, string.Empty, ex.Message);
-        }
-    }
-
-    private static async Task<(int ExitCode, byte[] OutputBytes, string ErrorText)> ExecuteBinaryCommandAsync(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var process = BuildProcess(fileName, arguments);
-            process.Start();
-
-            var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-            await using var outputStream = new MemoryStream();
-            await process.StandardOutput.BaseStream.CopyToAsync(outputStream, cancellationToken);
-
-            await process.WaitForExitAsync(cancellationToken);
-            var errorText = await errorTask;
-
-            return (process.ExitCode, outputStream.ToArray(), errorText);
-        }
-        catch (Exception ex)
-        {
-            return (-1, [], ex.Message);
-        }
-    }
-
-    private static Process BuildProcess(string fileName, IReadOnlyList<string> arguments)
-    {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = fileName,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-
-        foreach (var argument in arguments)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        return new Process
-        {
-            StartInfo = startInfo
-        };
     }
 }

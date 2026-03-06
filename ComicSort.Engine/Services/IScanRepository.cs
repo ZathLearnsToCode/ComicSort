@@ -6,7 +6,17 @@ public interface IScanRepository
 {
     Task<ComicFileLookup?> GetByNormalizedPathAsync(string normalizedPath, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyDictionary<string, ComicFileLookup>> GetByNormalizedPathsAsync(
+        IReadOnlyCollection<string> normalizedPaths,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<ComicFileLookup>> GetAllLookupsAsync(CancellationToken cancellationToken = default);
+
     Task DeleteByNormalizedPathAsync(string normalizedPath, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<string>> DeleteByNormalizedPathsAsync(
+        IReadOnlyCollection<string> normalizedPaths,
+        CancellationToken cancellationToken = default);
 
     Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
 
@@ -27,5 +37,15 @@ public interface IScanRepository
 
     Task<int> CountCandidatesAsync(
         CompiledSqlFilter filter,
+        CancellationToken cancellationToken = default);
+
+    Task<int> RewritePathsForDirectoryRenameAsync(
+        string oldDirectoryPath,
+        string newDirectoryPath,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> RewritePathForFileRenameAsync(
+        string oldFilePath,
+        string newFilePath,
         CancellationToken cancellationToken = default);
 }

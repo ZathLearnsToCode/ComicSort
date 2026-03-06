@@ -30,7 +30,8 @@ public enum MatcherField
     Added = 8,
     Modified = 9,
     LastScanned = 10,
-    Year = 11
+    Year = 11,
+    ModifiedInfo = 12
 }
 
 public enum MatcherOperator
@@ -159,6 +160,7 @@ public static class SmartListNodeMapper
             "filecreated" => MatcherField.Added,
             "modified" => MatcherField.Modified,
             "filemodified" => MatcherField.Modified,
+            "modifiedinfo" => MatcherField.ModifiedInfo,
             "lastscanned" => MatcherField.LastScanned,
             "year" => MatcherField.Year,
             _ => MatcherField.Unknown
@@ -226,6 +228,7 @@ public static class SmartListNodeMapper
             MatcherField.Modified => "File Modified",
             MatcherField.LastScanned => "Last Scanned",
             MatcherField.Year => "Year",
+            MatcherField.ModifiedInfo => "Modified Info",
             _ => "All"
         };
     }

@@ -88,12 +88,11 @@ public sealed class SmartListExecutionService : ISmartListExecutionService
             ? "FILE"
             : candidate.Extension.TrimStart('.').ToUpperInvariant();
 
-        var thumbnailReady = !string.IsNullOrWhiteSpace(candidate.ThumbnailPath) &&
-                             candidate.HasThumbnail &&
-                             File.Exists(candidate.ThumbnailPath);
+        var thumbnailReady = candidate.HasThumbnail;
 
         return new ComicLibraryItem
         {
+            SequenceNumber = 0,
             FilePath = candidate.FilePath,
             FileDirectory = candidate.FileDirectory,
             DisplayTitle = candidate.DisplayTitle,

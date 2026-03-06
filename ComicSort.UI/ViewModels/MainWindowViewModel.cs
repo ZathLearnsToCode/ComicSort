@@ -24,6 +24,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
         TopToolbar = new TopToolbarViewModel();
         TopToolbar.GroupingSelectionChanged += OnGroupingSelectionChanged;
+        TopToolbar.ArrangeSelectionChanged += OnArrangeSelectionChanged;
         Sidebar = sidebarViewModel;
         Sidebar.ActiveFilterChanged += OnSidebarActiveFilterChanged;
         SeriesPane = new ExplorerPaneViewModel("Series", CreateSeriesPaneData());
@@ -33,6 +34,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         PathBar = new PathBarViewModel();
         ComicGrid = comicGridViewModel;
         ComicGrid.ApplyGrouping(TopToolbar.GetGroupingSelection());
+        ComicGrid.ApplyArrangement(TopToolbar.SelectedArrangeBy);
         StatusBar = statusBarViewModel;
         
     }
@@ -61,17 +63,34 @@ public sealed class MainWindowViewModel : ViewModelBase
         ComicGrid.ApplyGrouping(TopToolbar.GetGroupingSelection());
     }
 
-    private async void OnSidebarActiveFilterChanged(object? sender, ComicGridFilterRequest request)
+    private void OnArrangeSelectionChanged(object? sender, System.EventArgs e)
     {
-        if (request.Mode == ComicGridFilterMode.AllComics)
-        {
-            await ComicGrid.ClearSmartListAsync();
-            return;
-        }
+        ComicGrid.ApplyArrangement(TopToolbar.SelectedArrangeBy);
+    }
 
-        if (request.SmartList is not null)
+    private void OnSidebarActiveFilterChanged(object? sender, ComicGridFilterRequest request)
+    {
+        _ = ApplySidebarFilterAsync(request);
+    }
+
+    private async Task ApplySidebarFilterAsync(ComicGridFilterRequest request)
+    {
+        try
         {
-            await ComicGrid.ApplySmartListAsync(request.SmartList);
+            if (request.Mode == ComicGridFilterMode.AllComics)
+            {
+                await ComicGrid.ClearSmartListAsync();
+                return;
+            }
+
+            if (request.SmartList is not null)
+            {
+                await ComicGrid.ApplySmartListAsync(request.SmartList);
+            }
+        }
+        catch
+        {
+            // Avoid surfacing unhandled exceptions from event callback dispatch.
         }
     }
 

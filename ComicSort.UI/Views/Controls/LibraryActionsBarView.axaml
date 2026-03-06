@@ -9,7 +9,7 @@
             BorderThickness="1"
             CornerRadius="8"
             Padding="8">
-        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
+        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto"
               ColumnSpacing="8">
             <Button Grid.Column="0"
                     Content="{Binding AddFolderButtonText}"
@@ -28,6 +28,14 @@
                     Background="{DynamicResource Theme.AccentBrush}"/>
 
             <Button Grid.Column="2"
+                    Content="{Binding TargetedScanButtonText}"
+                    Command="{Binding TargetedScanLibraryCommand}"
+                    IsEnabled="{Binding ScanLibraryEnabled}"
+                    Padding="14,6"
+                    Foreground="{DynamicResource Theme.OnAccentBrush}"
+                    Background="{DynamicResource Theme.AccentBrush}"/>
+
+            <Button Grid.Column="3"
                     Content="{Binding CancelScanButtonText}"
                     Command="{Binding CancelScanCommand}"
                     IsEnabled="{Binding IsScanRunning}"
@@ -35,13 +43,13 @@
                     Foreground="{DynamicResource Theme.OnAccentBrush}"
                     Background="{DynamicResource Theme.DangerBrush}"/>
 
-            <TextBlock Grid.Column="3"
+            <TextBlock Grid.Column="4"
                        VerticalAlignment="Center"
                        Margin="8,0,0,0"
                        Text="{Binding StatusText}"
                        Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
 
-            <Button Grid.Column="4"
+            <Button Grid.Column="5"
                     Command="{Binding OpenSettingsCommand}"
                     Padding="12,6"
                     Foreground="{DynamicResource Theme.OnAccentBrush}"

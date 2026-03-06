@@ -10,9 +10,15 @@ public interface IScanService
 
     event EventHandler<ComicFileSavedEventArgs>? ComicFileSaved;
 
+    event EventHandler<ComicFileRemovedEventArgs>? ComicFileRemoved;
+
     event EventHandler<ScanStateChangedEventArgs>? StateChanged;
 
     Task StartScanAsync(CancellationToken cancellationToken = default);
+
+    Task StartScanAsync(
+        IReadOnlyCollection<string> selectedFolders,
+        CancellationToken cancellationToken = default);
 
     void CancelScan();
 }

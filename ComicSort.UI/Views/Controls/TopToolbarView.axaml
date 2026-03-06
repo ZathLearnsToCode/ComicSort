@@ -9,7 +9,7 @@
             BorderThickness="1"
             CornerRadius="8"
             Padding="8">
-        <Grid ColumnDefinitions="300,145,170,120,*,280" ColumnSpacing="25">
+        <Grid ColumnDefinitions="300,Auto,Auto,*,280" ColumnSpacing="25">
             <Border Grid.Column="0"
                     Background="{DynamicResource Theme.SurfaceBrush}"
                     BorderBrush="{DynamicResource Theme.BorderBrush}"
@@ -89,12 +89,46 @@
                     </Button.ContextMenu>
                 </Button>
             </StackPanel>
-            
-            
 
-            <Border Grid.Column="4" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Label Content="Arrange by : " Foreground="{DynamicResource Theme.PrimaryTextBrush}" VerticalAlignment="Center"/>
+                <Button x:Name="ArrangeByButton"
+                        VerticalAlignment="Center"
+                        Padding="10,4"
+                        MinWidth="170"
+                        HorizontalContentAlignment="Left"
+                        Content="{Binding ArrangeByMenuText}"
+                        Click="ArrangeByButton_OnClick">
+                    <Button.ContextMenu>
+                        <ContextMenu Placement="Bottom">
+                            <MenuItem Header="Not Sorted"
+                                      Tag="Not Sorted"
+                                      ToggleType="Radio"
+                                      IsChecked="{Binding IsArrangeNotSortedSelected}"
+                                      Click="ArrangeMenuItem_OnClick" />
+                            <MenuItem Header="Series"
+                                      Tag="Series"
+                                      ToggleType="Radio"
+                                      IsChecked="{Binding IsArrangeSeriesSelected}"
+                                      Click="ArrangeMenuItem_OnClick" />
+                            <MenuItem Header="Position"
+                                      Tag="Position"
+                                      ToggleType="Radio"
+                                      IsChecked="{Binding IsArrangePositionSelected}"
+                                      Click="ArrangeMenuItem_OnClick" />
+                            <MenuItem Header="File Path"
+                                      Tag="File Path"
+                                      ToggleType="Radio"
+                                      IsChecked="{Binding IsArrangeFilePathSelected}"
+                                      Click="ArrangeMenuItem_OnClick" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+            </StackPanel>
 
-            <DockPanel Grid.Column="5">
+            <Border Grid.Column="3" />
+
+            <DockPanel Grid.Column="4">
                 <TextBox DockPanel.Dock="Left"
                          Width="180"
                          Watermark="Search all..."

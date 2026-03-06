@@ -12,15 +12,18 @@ namespace ComicSort.UI.Views
             Opened += OnOpened;
         }
 
-        private async void OnOpened(object? sender, System.EventArgs e)
+        private void OnOpened(object? sender, System.EventArgs e)
+        {
+            _ = InitializeGridAsync();
+        }
+
+        private async Task InitializeGridAsync()
         {
             if (DataContext is MainWindowViewModel viewModel)
             {
                 try
                 {
                     await viewModel.ComicGrid.InitializeAsync();
-                    await Task.Delay(400);
-                    await viewModel.ComicGrid.ReloadAsync();
                 }
                 catch
                 {

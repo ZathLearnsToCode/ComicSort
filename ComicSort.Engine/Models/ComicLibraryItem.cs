@@ -2,6 +2,8 @@ namespace ComicSort.Engine.Models;
 
 public sealed class ComicLibraryItem
 {
+    public long SequenceNumber { get; init; }
+
     public string FilePath { get; init; } = string.Empty;
 
     public string FileDirectory { get; init; } = string.Empty;

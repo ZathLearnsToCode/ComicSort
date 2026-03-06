@@ -29,7 +29,7 @@ public sealed class AppSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? LegacyThemeName { get; set; }
 
-    public int ScanBatchSize { get; set; } = 500;
+    public int ScanBatchSize { get; set; } = 200;
 
     public int ScanWorkerCount { get; set; } = Math.Min(4, Environment.ProcessorCount);
 
@@ -38,6 +38,12 @@ public sealed class AppSettings
     public bool ConfirmCbzConversion { get; set; } = true;
 
     public bool SendOriginalToRecycleBinOnCbzConversion { get; set; } = false;
+
+    public bool ConfirmDeleteFromLibrary { get; set; } = true;
+
+    public bool SendDeletedToRecycleBinOnLibraryDelete { get; set; } = false;
+
+    public bool RemoveMissingFilesDuringScan { get; set; } = true;
 }
 
 public sealed class ComicListItem

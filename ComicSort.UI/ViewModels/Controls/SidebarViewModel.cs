@@ -51,13 +51,14 @@ public partial class SidebarViewModel : ViewModelBase
             _allComicsItem
         ];
 
-        SmartListItems = BuildSmartListItems(settingsService.CurrentSettings);
+        SmartListItems = [];
 
         SelectedSidebarItem = LibraryItems.FirstOrDefault();
         SelectedSmartListItem = SmartListItems.FirstOrDefault();
 
         _scanService.ProgressChanged += OnScanProgressChanged;
         _scanService.StateChanged += OnScanStateChanged;
+        _ = InitializeSmartListsAsync();
         _ = LoadLibraryCountAsync();
     }
 
@@ -378,6 +379,9 @@ public partial class SidebarViewModel : ViewModelBase
             "ends with" => 6,
             "list contains" => 7,
             "regular expression" => 8,
+            "is yes" => 11,
+            "is no" => 12,
+            "is unknown" => 13,
             _ => 2
         };
     }
@@ -399,6 +403,9 @@ public partial class SidebarViewModel : ViewModelBase
             6 => "ends with",
             7 => "list contains",
             8 => "regular expression",
+            11 => "is Yes",
+            12 => "is No",
+            13 => "is Unknown",
             _ => "contains"
         };
     }
@@ -541,7 +548,7 @@ public partial class SidebarViewModel : ViewModelBase
             : MatcherValueKind.String;
     }
 
-    private async void SmartListItemOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void SmartListItemOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender is not SidebarItem item || item.IsHeader)
         {
@@ -567,9 +574,24 @@ public partial class SidebarViewModel : ViewModelBase
             return;
         }
 
+        _ = PersistSmartListRenameAsync(item, itemModel, normalizedName);
+    }
+
+    private async Task PersistSmartListRenameAsync(
+        SidebarItem item,
+        ComicListItem itemModel,
+        string normalizedName)
+    {
+        try
+        {
         itemModel.Name = normalizedName;
         item.Name = normalizedName;
         await _settingsService.SaveAsync();
+        }
+        catch
+        {
+            // Keep UI stable if background save fails.
+        }
     }
 
     private void DetachAndUnmap(SidebarItem item)
@@ -741,5 +763,31 @@ public partial class SidebarViewModel : ViewModelBase
         }
 
         _ = LoadLibraryCountAsync();
+    }
+
+    private async Task InitializeSmartListsAsync()
+    {
+        try
+        {
+            await _settingsService.InitializeAsync();
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                SmartListItems.Clear();
+                _settingsMap.Clear();
+
+                var smartLists = BuildSmartListItems(_settingsService.CurrentSettings);
+                foreach (var item in smartLists)
+                {
+                    SmartListItems.Add(item);
+                }
+
+                SelectedSmartListItem = SmartListItems.FirstOrDefault();
+            });
+        }
+        catch
+        {
+            // Keep UI responsive even when settings bootstrapping fails.
+        }
     }
 }

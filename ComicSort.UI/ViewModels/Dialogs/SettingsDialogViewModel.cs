@@ -60,6 +60,15 @@ public sealed partial class SettingsDialogViewModel : ViewModelBase
     [ObservableProperty]
     private string statusText = "Configure application preferences.";
 
+    [ObservableProperty]
+    private bool removeMissingFilesDuringScan;
+
+    [ObservableProperty]
+    private bool writeInfoIntoFiles;
+
+    [ObservableProperty]
+    private bool automaticallyUpdateFiles;
+
     public bool IsGeneralSectionSelected => string.Equals(SelectedSection, GeneralSection, StringComparison.Ordinal);
 
     public bool IsLibrarySectionSelected => string.Equals(SelectedSection, LibrarySection, StringComparison.Ordinal);
@@ -198,6 +207,7 @@ public sealed partial class SettingsDialogViewModel : ViewModelBase
                 Watched = x.First().Watched
             })
             .ToList();
+        settings.RemoveMissingFilesDuringScan = RemoveMissingFilesDuringScan;
 
         _themeService.ApplyTheme(settings.CurrentTheme);
         await _settingsService.SaveAsync();
@@ -285,6 +295,9 @@ public sealed partial class SettingsDialogViewModel : ViewModelBase
 
         _isLoadingThemeSelection = false;
         _themeService.ApplyTheme(currentTheme);
+        RemoveMissingFilesDuringScan = settings.RemoveMissingFilesDuringScan;
+        WriteInfoIntoFiles = false;
+        AutomaticallyUpdateFiles = false;
 
         LibraryFolders.Clear();
         foreach (var folder in settings.LibraryFolders)

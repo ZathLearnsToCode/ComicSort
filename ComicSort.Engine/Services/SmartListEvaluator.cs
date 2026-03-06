@@ -131,6 +131,11 @@ public sealed class SmartListEvaluator : ISmartListEvaluator
             return false;
         }
 
+        if (rule.Field is not MatcherField.ModifiedInfo and not MatcherField.Unknown)
+        {
+            return false;
+        }
+
         var hasThumbnail = candidate.HasThumbnail;
         result = rule.Operator switch
         {

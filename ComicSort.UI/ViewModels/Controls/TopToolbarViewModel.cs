@@ -9,6 +9,10 @@ namespace ComicSort.UI.ViewModels.Controls;
 public partial class TopToolbarViewModel : ViewModelBase
 {
     private readonly List<string> _selectedPrimaryFilters = [];
+    private const string ArrangeNotSorted = "Not Sorted";
+    private const string ArrangeSeries = "Series";
+    private const string ArrangePosition = "Position";
+    private const string ArrangeFilePath = "File Path";
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -47,6 +51,24 @@ public partial class TopToolbarViewModel : ViewModelBase
     private string selectedSortOption = "Name";
 
     [ObservableProperty]
+    private string arrangeByMenuText = ArrangeNotSorted;
+
+    [ObservableProperty]
+    private string selectedArrangeBy = ArrangeNotSorted;
+
+    [ObservableProperty]
+    private bool isArrangeNotSortedSelected = true;
+
+    [ObservableProperty]
+    private bool isArrangeSeriesSelected;
+
+    [ObservableProperty]
+    private bool isArrangePositionSelected;
+
+    [ObservableProperty]
+    private bool isArrangeFilePathSelected;
+
+    [ObservableProperty]
     private string globalSearchText = string.Empty;
 
     public ObservableCollection<string> PrimaryFilters { get; } =
@@ -71,6 +93,7 @@ public partial class TopToolbarViewModel : ViewModelBase
     ];
 
     public event EventHandler? GroupingSelectionChanged;
+    public event EventHandler? ArrangeSelectionChanged;
 
     public void ApplyPrimaryFilterSelection(string filterName, bool appendSelection)
     {
@@ -130,6 +153,23 @@ public partial class TopToolbarViewModel : ViewModelBase
         return [.. _selectedPrimaryFilters];
     }
 
+    public void ApplyArrangeSelection(string arrangeBy)
+    {
+        if (!IsKnownArrangeBy(arrangeBy))
+        {
+            return;
+        }
+
+        SelectedArrangeBy = arrangeBy;
+        ArrangeByMenuText = arrangeBy;
+        IsArrangeNotSortedSelected = string.Equals(arrangeBy, ArrangeNotSorted, StringComparison.Ordinal);
+        IsArrangeSeriesSelected = string.Equals(arrangeBy, ArrangeSeries, StringComparison.Ordinal);
+        IsArrangePositionSelected = string.Equals(arrangeBy, ArrangePosition, StringComparison.Ordinal);
+        IsArrangeFilePathSelected = string.Equals(arrangeBy, ArrangeFilePath, StringComparison.Ordinal);
+
+        ArrangeSelectionChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     private void SyncPrimaryFilterState()
     {
         IsNotGroupedSelected = _selectedPrimaryFilters.Count == 0;
@@ -157,6 +197,11 @@ public partial class TopToolbarViewModel : ViewModelBase
             or "File Directory"
             or "Folder"
             or "Import Source";
+    }
+
+    private static bool IsKnownArrangeBy(string arrangeBy)
+    {
+        return arrangeBy is ArrangeNotSorted or ArrangeSeries or ArrangePosition or ArrangeFilePath;
     }
 
 }

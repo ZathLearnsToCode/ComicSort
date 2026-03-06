@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace ComicSort.Engine.Services;
 
 public sealed class ComicDatabaseService : IComicDatabaseService
@@ -35,11 +37,57 @@ public sealed class ComicDatabaseService : IComicDatabaseService
 
             await using var dbContext = _dbContextFactory.CreateDbContext();
             await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+            await EnsureMetadataTablesAsync(dbContext, cancellationToken);
             _initialized = true;
         }
         finally
         {
             _initializeLock.Release();
         }
+    }
+
+    private static async Task EnsureMetadataTablesAsync(
+        DbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        const string ensureComicInfoSql = """
+            CREATE TABLE IF NOT EXISTS ComicInfo (
+                Id INTEGER NOT NULL CONSTRAINT PK_ComicInfo PRIMARY KEY AUTOINCREMENT,
+                ComicFileId INTEGER NOT NULL,
+                Series TEXT NULL,
+                Title TEXT NULL,
+                Summary TEXT NULL,
+                Writer TEXT NULL,
+                Penciller TEXT NULL,
+                Inker TEXT NULL,
+                Colorist TEXT NULL,
+                Publisher TEXT NULL,
+                PageCount INTEGER NULL,
+                CONSTRAINT FK_ComicInfo_ComicFiles_ComicFileId
+                    FOREIGN KEY (ComicFileId) REFERENCES ComicFiles (Id) ON DELETE CASCADE
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_ComicInfo_ComicFileId
+                ON ComicInfo (ComicFileId);
+            """;
+
+        const string ensureComicPagesSql = """
+            CREATE TABLE IF NOT EXISTS ComicPages (
+                Id INTEGER NOT NULL CONSTRAINT PK_ComicPages PRIMARY KEY AUTOINCREMENT,
+                ComicFileId INTEGER NOT NULL,
+                ImageIndex INTEGER NOT NULL,
+                ImageWidth INTEGER NULL,
+                ImageHeight INTEGER NULL,
+                PageType TEXT NULL,
+                CONSTRAINT FK_ComicPages_ComicFiles_ComicFileId
+                    FOREIGN KEY (ComicFileId) REFERENCES ComicFiles (Id) ON DELETE CASCADE
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_ComicPages_ComicFileId_ImageIndex
+                ON ComicPages (ComicFileId, ImageIndex);
+            """;
+
+        await dbContext.Database.ExecuteSqlRawAsync(ensureComicInfoSql, cancellationToken);
+        await dbContext.Database.ExecuteSqlRawAsync(ensureComicPagesSql, cancellationToken);
     }
 }

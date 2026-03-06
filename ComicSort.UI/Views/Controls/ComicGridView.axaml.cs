@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
 using ComicSort.UI.Models;
 using ComicSort.UI.ViewModels.Controls;
 using System.Collections.Generic;
@@ -9,6 +8,8 @@ namespace ComicSort.UI.Views.Controls;
 
 public partial class ComicGridView : UserControl
 {
+    private readonly HashSet<ComicTileModel> _groupedSelection = [];
+
     public ComicGridView()
     {
         InitializeComponent();
@@ -25,6 +26,7 @@ public partial class ComicGridView : UserControl
         var selectedTiles = listBox.SelectedItems?
             .OfType<ComicTileModel>()
             .ToArray() ?? [];
+        _groupedSelection.Clear();
         viewModel.SetSelectedItems(selectedTiles);
 
         viewModel.SelectedItem = listBox.SelectedItem as ComicTileModel ?? selectedTiles.FirstOrDefault();
@@ -38,17 +40,17 @@ public partial class ComicGridView : UserControl
             return;
         }
 
-        var selectedTiles = new List<ComicTileModel>();
-        foreach (var groupedList in this.GetLogicalDescendants().OfType<ListBox>())
+        foreach (var removed in e.RemovedItems.OfType<ComicTileModel>())
         {
-            if (!groupedList.IsVisible || groupedList.SelectedItems is null)
-            {
-                continue;
-            }
-
-            selectedTiles.AddRange(groupedList.SelectedItems.OfType<ComicTileModel>());
+            _groupedSelection.Remove(removed);
         }
 
+        foreach (var added in e.AddedItems.OfType<ComicTileModel>())
+        {
+            _groupedSelection.Add(added);
+        }
+
+        var selectedTiles = _groupedSelection.ToArray();
         viewModel.SetSelectedItems(selectedTiles);
 
         viewModel.SelectedItem = listBox.SelectedItem as ComicTileModel ?? selectedTiles.FirstOrDefault();

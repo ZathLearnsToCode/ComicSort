@@ -45,4 +45,28 @@ public partial class TopToolbarView : UserControl
 
         _appendPrimaryFilterSelection = false;
     }
+
+    private void ArrangeByButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Control button || button.ContextMenu is null)
+        {
+            return;
+        }
+
+        button.ContextMenu.Open(button);
+    }
+
+    private void ArrangeMenuItem_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not TopToolbarViewModel viewModel || sender is not MenuItem menuItem)
+        {
+            return;
+        }
+
+        var arrangeBy = menuItem.Tag?.ToString() ?? menuItem.Header?.ToString();
+        if (!string.IsNullOrWhiteSpace(arrangeBy))
+        {
+            viewModel.ApplyArrangeSelection(arrangeBy);
+        }
+    }
 }

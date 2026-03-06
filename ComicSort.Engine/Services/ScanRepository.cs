@@ -25,11 +25,86 @@ public sealed class ScanRepository : IScanRepository
             .Select(x => new ComicFileLookup
             {
                 NormalizedPath = x.NormalizedPath,
+                FileName = x.FileName,
+                SizeBytes = x.SizeBytes,
                 Fingerprint = x.Fingerprint,
                 HasThumbnail = x.HasThumbnail,
-                ThumbnailPath = x.ThumbnailPath
+                ThumbnailPath = x.ThumbnailPath,
+                HasComicInfo = x.ComicInfo != null
             })
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyDictionary<string, ComicFileLookup>> GetByNormalizedPathsAsync(
+        IReadOnlyCollection<string> normalizedPaths,
+        CancellationToken cancellationToken = default)
+    {
+        if (normalizedPaths.Count == 0)
+        {
+            return new Dictionary<string, ComicFileLookup>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        await using var dbContext = _dbContextFactory.CreateDbContext();
+        var paths = normalizedPaths
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (paths.Length == 0)
+        {
+            return new Dictionary<string, ComicFileLookup>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        const int maxSqliteVariableCount = 900;
+        var results = new Dictionary<string, ComicFileLookup>(StringComparer.OrdinalIgnoreCase);
+
+        for (var offset = 0; offset < paths.Length; offset += maxSqliteVariableCount)
+        {
+            var chunk = paths
+                .Skip(offset)
+                .Take(maxSqliteVariableCount)
+                .ToArray();
+
+            var chunkRows = await dbContext.ComicFiles
+                .AsNoTracking()
+                .Where(x => chunk.Contains(x.NormalizedPath))
+                .Select(x => new ComicFileLookup
+                {
+                    NormalizedPath = x.NormalizedPath,
+                    FileName = x.FileName,
+                    SizeBytes = x.SizeBytes,
+                    Fingerprint = x.Fingerprint,
+                    HasThumbnail = x.HasThumbnail,
+                    ThumbnailPath = x.ThumbnailPath,
+                    HasComicInfo = x.ComicInfo != null
+                })
+                .ToArrayAsync(cancellationToken);
+
+            foreach (var row in chunkRows)
+            {
+                results[row.NormalizedPath] = row;
+            }
+        }
+
+        return results;
+    }
+
+    public async Task<IReadOnlyList<ComicFileLookup>> GetAllLookupsAsync(CancellationToken cancellationToken = default)
+    {
+        await using var dbContext = _dbContextFactory.CreateDbContext();
+        return await dbContext.ComicFiles
+            .AsNoTracking()
+            .Select(x => new ComicFileLookup
+            {
+                NormalizedPath = x.NormalizedPath,
+                FileName = x.FileName,
+                SizeBytes = x.SizeBytes,
+                Fingerprint = x.Fingerprint,
+                HasThumbnail = x.HasThumbnail,
+                ThumbnailPath = x.ThumbnailPath,
+                HasComicInfo = x.ComicInfo != null
+            })
+            .ToArrayAsync(cancellationToken);
     }
 
     public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
@@ -70,6 +145,52 @@ public sealed class ScanRepository : IScanRepository
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<string>> DeleteByNormalizedPathsAsync(
+        IReadOnlyCollection<string> normalizedPaths,
+        CancellationToken cancellationToken = default)
+    {
+        if (normalizedPaths.Count == 0)
+        {
+            return [];
+        }
+
+        var paths = normalizedPaths
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (paths.Length == 0)
+        {
+            return [];
+        }
+
+        await using var dbContext = _dbContextFactory.CreateDbContext();
+        const int maxSqliteVariableCount = 900;
+        var removedPaths = new List<string>(paths.Length);
+
+        for (var offset = 0; offset < paths.Length; offset += maxSqliteVariableCount)
+        {
+            var chunk = paths
+                .Skip(offset)
+                .Take(maxSqliteVariableCount)
+                .ToArray();
+
+            var chunkEntities = await dbContext.ComicFiles
+                .Where(x => chunk.Contains(x.NormalizedPath))
+                .ToArrayAsync(cancellationToken);
+
+            if (chunkEntities.Length == 0)
+            {
+                continue;
+            }
+
+            removedPaths.AddRange(chunkEntities.Select(x => x.NormalizedPath));
+            dbContext.ComicFiles.RemoveRange(chunkEntities);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return removedPaths;
+    }
+
     public async Task<ScanBatchSaveResult> UpsertBatchAsync(
         IReadOnlyCollection<ComicFileUpsertModel> items,
         CancellationToken cancellationToken = default)
@@ -82,6 +203,8 @@ public sealed class ScanRepository : IScanRepository
         await using var dbContext = _dbContextFactory.CreateDbContext();
         var normalizedPaths = items.Select(x => x.NormalizedPath).Distinct().ToArray();
         var existingItems = await dbContext.ComicFiles
+            .Include(x => x.ComicInfo)
+            .Include(x => x.Pages)
             .Where(x => normalizedPaths.Contains(x.NormalizedPath))
             .ToDictionaryAsync(x => x.NormalizedPath, cancellationToken);
 
@@ -119,7 +242,44 @@ public sealed class ScanRepository : IScanRepository
             entity.ScanState = model.ScanState;
             entity.LastError = model.LastError;
 
-            savedItems.Add(ToLibraryItem(entity));
+            var metadata = model.Metadata;
+            if (metadata is not null)
+            {
+                entity.ComicInfo ??= new ComicInfoEntity();
+                entity.ComicInfo.Series = metadata.Series;
+                entity.ComicInfo.Title = metadata.Title;
+                entity.ComicInfo.Summary = metadata.Summary;
+                entity.ComicInfo.Writer = metadata.Writer;
+                entity.ComicInfo.Penciller = metadata.Penciller;
+                entity.ComicInfo.Inker = metadata.Inker;
+                entity.ComicInfo.Colorist = metadata.Colorist;
+                entity.ComicInfo.Publisher = metadata.Publisher;
+                entity.ComicInfo.PageCount = metadata.PageCount;
+
+                if (entity.Pages.Count > 0)
+                {
+                    dbContext.ComicPages.RemoveRange(entity.Pages);
+                    entity.Pages.Clear();
+                }
+
+                var uniquePages = metadata.Pages
+                    .GroupBy(x => x.ImageIndex)
+                    .Select(x => x.First())
+                    .OrderBy(x => x.ImageIndex);
+
+                foreach (var page in uniquePages)
+                {
+                    entity.Pages.Add(new ComicPageEntity
+                    {
+                        ImageIndex = page.ImageIndex,
+                        ImageWidth = page.ImageWidth,
+                        ImageHeight = page.ImageHeight,
+                        PageType = page.PageType
+                    });
+                }
+            }
+
+            savedItems.Add(ToLibraryItem(entity, model.SequenceNumber));
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -310,17 +470,102 @@ public sealed class ScanRepository : IScanRepository
         return Convert.ToInt32(scalar, CultureInfo.InvariantCulture);
     }
 
+    public async Task<int> RewritePathsForDirectoryRenameAsync(
+        string oldDirectoryPath,
+        string newDirectoryPath,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedOldDirectoryPath = NormalizeDirectoryPath(oldDirectoryPath);
+        var normalizedNewDirectoryPath = NormalizeDirectoryPath(newDirectoryPath);
+        if (string.IsNullOrWhiteSpace(normalizedOldDirectoryPath) ||
+            string.IsNullOrWhiteSpace(normalizedNewDirectoryPath) ||
+            string.Equals(normalizedOldDirectoryPath, normalizedNewDirectoryPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        var oldPrefix = normalizedOldDirectoryPath + Path.DirectorySeparatorChar;
+        var newPrefix = normalizedNewDirectoryPath + Path.DirectorySeparatorChar;
+        var oldPrefixLike = EscapeLikePattern(oldPrefix) + "%";
+        var updatedUtc = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+
+        await using var dbContext = _dbContextFactory.CreateDbContext();
+        await dbContext.Database.OpenConnectionAsync(cancellationToken);
+
+        await using var command = dbContext.Database.GetDbConnection().CreateCommand();
+        command.CommandText = """
+            UPDATE ComicFiles
+            SET NormalizedPath = $newPrefix || SUBSTR(NormalizedPath, LENGTH($oldPrefix) + 1),
+                LastScannedUtc = $updatedUtc
+            WHERE LOWER(NormalizedPath) LIKE LOWER($oldPrefixLike) ESCAPE '\';
+            """;
+
+        AddParameter(command, "$newPrefix", newPrefix);
+        AddParameter(command, "$oldPrefix", oldPrefix);
+        AddParameter(command, "$oldPrefixLike", oldPrefixLike);
+        AddParameter(command, "$updatedUtc", updatedUtc);
+
+        return await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<bool> RewritePathForFileRenameAsync(
+        string oldFilePath,
+        string newFilePath,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedOldFilePath = NormalizeFilePath(oldFilePath);
+        var normalizedNewFilePath = NormalizeFilePath(newFilePath);
+        if (string.IsNullOrWhiteSpace(normalizedOldFilePath) ||
+            string.IsNullOrWhiteSpace(normalizedNewFilePath) ||
+            string.Equals(normalizedOldFilePath, normalizedNewFilePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var newFileName = Path.GetFileName(normalizedNewFilePath);
+        var newExtension = Path.GetExtension(normalizedNewFilePath);
+        var updatedUtc = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+
+        await using var dbContext = _dbContextFactory.CreateDbContext();
+        await dbContext.Database.OpenConnectionAsync(cancellationToken);
+
+        await using var command = dbContext.Database.GetDbConnection().CreateCommand();
+        command.CommandText = """
+            UPDATE ComicFiles
+            SET NormalizedPath = $newPath,
+                FileName = $newFileName,
+                Extension = $newExtension,
+                LastScannedUtc = $updatedUtc
+            WHERE LOWER(NormalizedPath) = LOWER($oldPath);
+            """;
+
+        AddParameter(command, "$newPath", normalizedNewFilePath);
+        AddParameter(command, "$newFileName", newFileName);
+        AddParameter(command, "$newExtension", newExtension);
+        AddParameter(command, "$oldPath", normalizedOldFilePath);
+        AddParameter(command, "$updatedUtc", updatedUtc);
+
+        var rows = await command.ExecuteNonQueryAsync(cancellationToken);
+        return rows > 0;
+    }
+
     private static ComicLibraryItem ToLibraryItem(ComicFileEntity entity)
+    {
+        return ToLibraryItem(entity, sequenceNumber: 0);
+    }
+
+    private static ComicLibraryItem ToLibraryItem(ComicFileEntity entity, long sequenceNumber)
     {
         return new ComicLibraryItem
         {
+            SequenceNumber = sequenceNumber,
             FilePath = entity.NormalizedPath,
             FileDirectory = Path.GetDirectoryName(entity.NormalizedPath) ?? string.Empty,
             DisplayTitle = Path.GetFileNameWithoutExtension(entity.FileName),
             Series = entity.ComicInfo?.Series,
             Publisher = entity.ComicInfo?.Publisher,
             ThumbnailPath = entity.ThumbnailPath,
-            IsThumbnailReady = entity.HasThumbnail && !string.IsNullOrWhiteSpace(entity.ThumbnailPath) && File.Exists(entity.ThumbnailPath),
+            IsThumbnailReady = entity.HasThumbnail,
             FileTypeTag = entity.Extension.TrimStart('.').ToUpperInvariant(),
             LastScannedUtc = entity.LastScannedUtc
         };
@@ -332,12 +577,11 @@ public sealed class ScanRepository : IScanRepository
             ? "FILE"
             : candidate.Extension.TrimStart('.').ToUpperInvariant();
 
-        var thumbnailReady = !string.IsNullOrWhiteSpace(candidate.ThumbnailPath) &&
-                             candidate.HasThumbnail &&
-                             File.Exists(candidate.ThumbnailPath);
+        var thumbnailReady = candidate.HasThumbnail;
 
         return new ComicLibraryItem
         {
+            SequenceNumber = 0,
             FilePath = candidate.FilePath,
             FileDirectory = candidate.FileDirectory,
             DisplayTitle = candidate.DisplayTitle,
@@ -348,5 +592,55 @@ public sealed class ScanRepository : IScanRepository
             FileTypeTag = normalizedExtension,
             LastScannedUtc = candidate.LastScannedUtc
         };
+    }
+
+    private static void AddParameter(System.Data.Common.DbCommand command, string name, object value)
+    {
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = name;
+        parameter.Value = value;
+        command.Parameters.Add(parameter);
+    }
+
+    private static string NormalizeDirectoryPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            return Path.GetFullPath(path).Trim().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        }
+        catch
+        {
+            return path.Trim().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        }
+    }
+
+    private static string NormalizeFilePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            return Path.GetFullPath(path).Trim();
+        }
+        catch
+        {
+            return path.Trim();
+        }
+    }
+
+    private static string EscapeLikePattern(string value)
+    {
+        return value
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
     }
 }

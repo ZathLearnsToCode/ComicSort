@@ -16,7 +16,12 @@ public partial class SettingsDialog : Window
         Opened += OnOpened;
     }
 
-    private async void OnOpened(object? sender, System.EventArgs e)
+    private void OnOpened(object? sender, System.EventArgs e)
+    {
+        _ = InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
     {
         if (_initialized || _viewModel is null)
         {

@@ -4,6 +4,8 @@ namespace ComicSort.Engine.Models;
 
 public sealed class ComicFileUpsertModel
 {
+    public long SequenceNumber { get; init; }
+
     public string NormalizedPath { get; init; } = string.Empty;
 
     public string FileName { get; init; } = string.Empty;
@@ -29,4 +31,6 @@ public sealed class ComicFileUpsertModel
     public ScanState ScanState { get; init; }
 
     public string? LastError { get; init; }
+
+    public ComicMetadata? Metadata { get; init; }
 }

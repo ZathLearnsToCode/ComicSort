@@ -120,7 +120,7 @@
                         <TextBlock Classes="section-title" Text="Library" />
 
                         <Border Classes="card">
-                            <Grid RowDefinitions="Auto,*,Auto"
+                            <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto"
                                   RowSpacing="12"
                                   MinHeight="320">
                                 <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
@@ -168,8 +168,20 @@
                                     </ListBox>
                                 </Border>
 
-                                <TextBlock Grid.Row="2"
-                                           Text="Checked folders are marked for future watcher support."
+                                <CheckBox Grid.Row="2"
+                                          IsChecked="{Binding RemoveMissingFilesDuringScan, Mode=TwoWay}"
+                                          Content="Automatically remove missing files from library during scan" />
+
+                                <CheckBox Grid.Row="3"
+                                          IsChecked="{Binding WriteInfoIntoFiles, Mode=TwoWay}"
+                                          Content="Write info into files" />
+
+                                <CheckBox Grid.Row="4"
+                                          IsChecked="{Binding AutomaticallyUpdateFiles, Mode=TwoWay}"
+                                          Content="Automatically update files" />
+
+                                <TextBlock Grid.Row="5"
+                                           Text="Checked folders subscribe to rename-only watcher events. Missing file cleanup applies only to scanned library roots."
                                            Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
                             </Grid>
                         </Border>

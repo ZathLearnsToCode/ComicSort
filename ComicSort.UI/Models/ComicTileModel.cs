@@ -28,6 +28,9 @@ public sealed partial class ComicTileModel : ObservableObject
     private Bitmap? thumbnailImage;
 
     [ObservableProperty]
+    private int thumbnailVersion;
+
+    [ObservableProperty]
     private bool isThumbnailReady;
 
     [ObservableProperty]

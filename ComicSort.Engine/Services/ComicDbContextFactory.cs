@@ -6,6 +6,10 @@ namespace ComicSort.Engine.Services;
 public sealed class ComicDbContextFactory : IComicDbContextFactory
 {
     private readonly ISettingsService _settingsService;
+    private readonly object _optionsLock = new();
+    private DbContextOptions<ComicSortDbContext>? _cachedOptions;
+    private string? _cachedDatabasePath;
+    private string? _ensuredDatabaseDirectory;
 
     public ComicDbContextFactory(ISettingsService settingsService)
     {
@@ -15,14 +19,27 @@ public sealed class ComicDbContextFactory : IComicDbContextFactory
     public ComicSortDbContext CreateDbContext()
     {
         var databasePath = _settingsService.CurrentSettings.DatabasePath;
-        var databaseDirectory = Path.GetDirectoryName(databasePath);
-        if (!string.IsNullOrWhiteSpace(databaseDirectory))
+        lock (_optionsLock)
         {
-            Directory.CreateDirectory(databaseDirectory);
-        }
+            if (_cachedOptions is null ||
+                !string.Equals(_cachedDatabasePath, databasePath, StringComparison.OrdinalIgnoreCase))
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<ComicSortDbContext>();
+                optionsBuilder.UseSqlite($"Data Source={databasePath}");
+                _cachedOptions = optionsBuilder.Options;
+                _cachedDatabasePath = databasePath;
+                _ensuredDatabaseDirectory = null;
+            }
 
-        var optionsBuilder = new DbContextOptionsBuilder<ComicSortDbContext>();
-        optionsBuilder.UseSqlite($"Data Source={databasePath}");
-        return new ComicSortDbContext(optionsBuilder.Options);
+            var databaseDirectory = Path.GetDirectoryName(databasePath);
+            if (!string.IsNullOrWhiteSpace(databaseDirectory) &&
+                !string.Equals(_ensuredDatabaseDirectory, databaseDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                Directory.CreateDirectory(databaseDirectory);
+                _ensuredDatabaseDirectory = databaseDirectory;
+            }
+
+            return new ComicSortDbContext(_cachedOptions);
+        }
     }
 }

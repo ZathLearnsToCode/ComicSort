@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using ComicSort.Engine.Services;
 using ComicSort.UI.Services;
 using ComicSort.UI.ViewModels;
@@ -35,7 +36,10 @@ namespace ComicSort.UI
                     services.AddSingleton<IComicDbContextFactory, ComicDbContextFactory>();
                     services.AddSingleton<IComicDatabaseService, ComicDatabaseService>();
                     services.AddSingleton<IScanRepository, ScanRepository>();
+                    services.AddSingleton<IProcessRunner, ProcessRunner>();
+                    services.AddSingleton<IArchiveInspectorService, ArchiveInspectorService>();
                     services.AddSingleton<IArchiveImageService, SevenZipArchiveImageService>();
+                    services.AddSingleton<IComicMetadataService, ComicMetadataService>();
                     services.AddSingleton<IThumbnailCacheService, ThumbnailCacheService>();
                     services.AddSingleton<IScanService, ScanService>();
                     services.AddSingleton<IComicConversionService, ComicConversionService>();
@@ -57,6 +61,7 @@ namespace ComicSort.UI
                     services.AddTransient<LibraryActionsBarView>();
 
                     services.AddHostedService<StartupService>();
+                    services.AddHostedService<ComicLibraryRenameWatcherService>();
                 })
             .Build();
 
@@ -67,30 +72,11 @@ namespace ComicSort.UI
                 DisableAvaloniaDataAnnotationValidation();
 
                 var settingsService = AppHost.Services.GetRequiredService<ISettingsService>();
-                Task.Run(() => settingsService.InitializeAsync()).GetAwaiter().GetResult();
                 var themeService = AppHost.Services.GetRequiredService<IThemeService>();
-
-                var originalDefaultTheme = settingsService.CurrentSettings.DefaultTheme;
-                var originalCurrentTheme = settingsService.CurrentSettings.CurrentTheme;
-
-                var defaultTheme = themeService.NormalizeThemeName(originalDefaultTheme);
-                var currentTheme = themeService.NormalizeThemeName(originalCurrentTheme, defaultTheme);
-                settingsService.CurrentSettings.DefaultTheme = defaultTheme;
-                settingsService.CurrentSettings.CurrentTheme = currentTheme;
-                themeService.ApplyTheme(currentTheme);
-
-                if (!string.Equals(originalDefaultTheme, defaultTheme, System.StringComparison.Ordinal) ||
-                    !string.Equals(originalCurrentTheme, currentTheme, System.StringComparison.Ordinal))
-                {
-                    Task.Run(() => settingsService.SaveAsync()).GetAwaiter().GetResult();
-                }
+                _ = InitializeThemeAsync(settingsService, themeService);
 
                 var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = AppHost.Services.GetRequiredService<MainWindowViewModel>();
-                if (mainWindow.DataContext is MainWindowViewModel mainWindowViewModel)
-                {
-                    _ = mainWindowViewModel.ComicGrid.InitializeAsync();
-                }
 
                 desktop.MainWindow = mainWindow;
 
@@ -107,6 +93,37 @@ namespace ComicSort.UI
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private static async Task InitializeThemeAsync(ISettingsService settingsService, IThemeService themeService)
+        {
+            try
+            {
+                await settingsService.InitializeAsync();
+
+                var originalDefaultTheme = settingsService.CurrentSettings.DefaultTheme;
+                var originalCurrentTheme = settingsService.CurrentSettings.CurrentTheme;
+
+                var defaultTheme = themeService.NormalizeThemeName(originalDefaultTheme);
+                var currentTheme = themeService.NormalizeThemeName(originalCurrentTheme, defaultTheme);
+                settingsService.CurrentSettings.DefaultTheme = defaultTheme;
+                settingsService.CurrentSettings.CurrentTheme = currentTheme;
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    themeService.ApplyTheme(currentTheme);
+                });
+
+                if (!string.Equals(originalDefaultTheme, defaultTheme, System.StringComparison.Ordinal) ||
+                    !string.Equals(originalCurrentTheme, currentTheme, System.StringComparison.Ordinal))
+                {
+                    await settingsService.SaveAsync();
+                }
+            }
+            catch
+            {
+                // Keep startup resilient if settings/theme initialization fails.
+            }
         }
 
         private void DisableAvaloniaDataAnnotationValidation()

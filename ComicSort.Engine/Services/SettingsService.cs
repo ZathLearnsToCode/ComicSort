@@ -7,8 +7,10 @@ public sealed class SettingsService : ISettingsService
 {
     private const string AppDataDirectoryName = "ComcSort2";
     private const string SettingsFileName = "settings.json";
-    private const int DefaultScanBatchSize = 500;
+    private const int CurrentSettingsVersion = 5;
+    private const int DefaultScanBatchSize = 200;
     private const int DefaultScanStatusUpdateIntervalMs = 100;
+    private static readonly Guid FilesToUpdateSmartListId = Guid.Parse("9ddc2db2-bcd1-46e7-8d2a-dade04b23291");
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -21,6 +23,7 @@ public sealed class SettingsService : ISettingsService
     private readonly string _settingsFilePath;
 
     private AppSettings? _settings;
+    public event EventHandler? SettingsChanged;
 
     public SettingsService()
     {
@@ -80,6 +83,8 @@ public sealed class SettingsService : ISettingsService
         {
             _settingsLock.Release();
         }
+
+        SettingsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public async Task SavetoSettings(string folder)
@@ -114,6 +119,8 @@ public sealed class SettingsService : ISettingsService
         {
             _settingsLock.Release();
         }
+
+        SettingsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task PersistLockedAsync(CancellationToken cancellationToken = default)
@@ -133,7 +140,7 @@ public sealed class SettingsService : ISettingsService
         var defaultThumbnailCacheDirectory = GetDefaultThumbnailCacheDirectory();
 
         var originalVersion = settings.Version <= 0 ? 1 : settings.Version;
-        settings.Version = Math.Max(originalVersion, 2);
+        settings.Version = Math.Max(originalVersion, CurrentSettingsVersion);
         settings.DatabasePath = string.IsNullOrWhiteSpace(settings.DatabasePath)
             ? defaultDatabasePath
             : settings.DatabasePath.Trim();
@@ -164,6 +171,15 @@ public sealed class SettingsService : ISettingsService
         if (originalVersion < 2)
         {
             settings.ConfirmCbzConversion = true;
+        }
+        if (originalVersion < 3)
+        {
+            settings.ConfirmDeleteFromLibrary = true;
+            settings.SendDeletedToRecycleBinOnLibraryDelete = false;
+        }
+        if (originalVersion < 4)
+        {
+            settings.RemoveMissingFilesDuringScan = true;
         }
         settings.LibraryFolders ??= [];
         settings.LibraryFolders = settings.LibraryFolders
@@ -210,6 +226,11 @@ public sealed class SettingsService : ISettingsService
             }
         }
 
+        if (originalVersion < 5)
+        {
+            EnsureFilesToUpdateDefaults(settings);
+        }
+
         if (settings.LastUpdatedUtc == default)
         {
             settings.LastUpdatedUtc = DateTimeOffset.UtcNow;
@@ -222,7 +243,7 @@ public sealed class SettingsService : ISettingsService
 
         return new AppSettings
         {
-            Version = 2,
+            Version = CurrentSettingsVersion,
             LastUpdatedUtc = now,
             DatabasePath = GetDefaultDatabasePath(),
             ThumbnailCacheDirectory = GetDefaultThumbnailCacheDirectory(),
@@ -233,6 +254,9 @@ public sealed class SettingsService : ISettingsService
             ScanStatusUpdateIntervalMs = DefaultScanStatusUpdateIntervalMs,
             ConfirmCbzConversion = true,
             SendOriginalToRecycleBinOnCbzConversion = false,
+            ConfirmDeleteFromLibrary = true,
+            SendDeletedToRecycleBinOnLibraryDelete = false,
+            RemoveMissingFilesDuringScan = true,
             LibraryFolders = [],
             ComicLists =
             [
@@ -300,11 +324,7 @@ public sealed class SettingsService : ISettingsService
                             now,
                             matchOperator: 1,
                             matchValue: 95),
-                        CreateSmartList(
-                            "9ddc2db2-bcd1-46e7-8d2a-dade04b23291",
-                            "Files to update",
-                            "ComicBookModifiedInfoMatcher",
-                            now: now)
+                        CreateFilesToUpdateSmartList(now)
                     ]
                 },
                 new ComicListItem
@@ -369,6 +389,136 @@ public sealed class SettingsService : ISettingsService
         };
     }
 
+    private static ComicListItem CreateFilesToUpdateSmartList(DateTimeOffset now)
+    {
+        var list = CreateSmartList(
+            FilesToUpdateSmartListId.ToString(),
+            "Files to update",
+            "ComicBookModifiedInfoMatcher",
+            now,
+            matchOperator: 11);
+
+        list.Expression = CreateFilesToUpdateExpression();
+        list.QueryText = "Match All ([Modified Info] is Yes)";
+        return list;
+    }
+
+    private static SmartListExpressionNode CreateFilesToUpdateExpression()
+    {
+        return new SmartListExpressionNode
+        {
+            NodeType = "Group",
+            MatchMode = "All",
+            Children =
+            [
+                new SmartListExpressionNode
+                {
+                    NodeType = "Rule",
+                    Field = "Modified Info",
+                    Operator = "is Yes",
+                    ValueKind = "Boolean"
+                }
+            ]
+        };
+    }
+
+    private static void EnsureFilesToUpdateDefaults(AppSettings settings)
+    {
+        var list = FindComicListById(settings.ComicLists, FilesToUpdateSmartListId);
+        if (list is null || !ShouldApplyFilesToUpdateDefaults(list))
+        {
+            return;
+        }
+
+        list.MatchMode = "All";
+        list.Matchers =
+        [
+            new ComicBookMatcher
+            {
+                MatcherType = "ComicBookModifiedInfoMatcher",
+                MatchOperator = 11
+            }
+        ];
+        list.Expression = CreateFilesToUpdateExpression();
+        list.QueryText = "Match All ([Modified Info] is Yes)";
+    }
+
+    private static bool ShouldApplyFilesToUpdateDefaults(ComicListItem list)
+    {
+        if (list.Expression is null)
+        {
+            return list.Matchers.Any(matcher =>
+                string.Equals(matcher.MatcherType, "ComicBookModifiedInfoMatcher", StringComparison.OrdinalIgnoreCase));
+        }
+
+        var rule = ExtractSingleRule(list.Expression);
+        if (rule is null)
+        {
+            return false;
+        }
+
+        var field = NormalizeToken(rule.Field);
+        var op = NormalizeToken(rule.Operator);
+
+        if (field == "modifiedinfo" && op == "isyes")
+        {
+            return false;
+        }
+
+        return string.IsNullOrWhiteSpace(rule.Value1) &&
+               (field is "" or "all" or "modifiedinfo") &&
+               (op is "" or "contains");
+    }
+
+    private static SmartListExpressionNode? ExtractSingleRule(SmartListExpressionNode expression)
+    {
+        if (string.Equals(expression.NodeType, "Rule", StringComparison.OrdinalIgnoreCase))
+        {
+            return expression;
+        }
+
+        if (string.Equals(expression.NodeType, "Group", StringComparison.OrdinalIgnoreCase) &&
+            expression.Children.Count == 1 &&
+            string.Equals(expression.Children[0].NodeType, "Rule", StringComparison.OrdinalIgnoreCase))
+        {
+            return expression.Children[0];
+        }
+
+        return null;
+    }
+
+    private static string NormalizeToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return new string(value
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray());
+    }
+
+    private static ComicListItem? FindComicListById(IEnumerable<ComicListItem> lists, Guid id)
+    {
+        foreach (var list in lists)
+        {
+            if (list.Id == id)
+            {
+                return list;
+            }
+
+            var nested = FindComicListById(list.Items, id);
+            if (nested is not null)
+            {
+                return nested;
+            }
+        }
+
+        return null;
+    }
+
     private static void EnsureComicListDefaults(ComicListItem comicList)
     {
         comicList.MatchMode = string.Equals(comicList.MatchMode, "Any", StringComparison.OrdinalIgnoreCase)
@@ -427,6 +577,9 @@ public sealed class SettingsService : ISettingsService
             6 => "ends with",
             7 => "list contains",
             8 => "regular expression",
+            11 => "is Yes",
+            12 => "is No",
+            13 => "is Unknown",
             _ => "contains"
         };
 

@@ -8,7 +8,7 @@
         d:DesignHeight="900"
         x:Class="ComicSort.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/ComicSort_128x128.ico"
         Title="ComicSort"
         Width="1540"
         Height="900"

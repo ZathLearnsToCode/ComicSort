@@ -117,6 +117,9 @@ public sealed class SmartListExpressionService : ISmartListExpressionService
             6 => MatcherOperator.EndsWith,
             7 => MatcherOperator.ListContains,
             8 => MatcherOperator.Regex,
+            11 => MatcherOperator.IsYes,
+            12 => MatcherOperator.IsNo,
+            13 => MatcherOperator.IsUnknown,
             _ => MatcherOperator.Contains
         };
     }

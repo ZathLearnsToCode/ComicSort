@@ -5,6 +5,7 @@ using ComicSort.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ComicSort.UI.ViewModels.Controls;
@@ -19,7 +20,10 @@ public partial class LibraryActionsBarViewModel : ViewModelBase
     private string addFolderButtonText = "Add Folder to Library";
 
     [ObservableProperty]
-    private string scanLibraryButtonText = "Scan Library";
+    private string scanLibraryButtonText = "Full Scan";
+
+    [ObservableProperty]
+    private string targetedScanButtonText = "Targeted Scan";
 
     [ObservableProperty]
     private string cancelScanButtonText = "Cancel Scan";
@@ -89,6 +93,44 @@ public partial class LibraryActionsBarViewModel : ViewModelBase
         StatusText = "Starting scan...";
         _ = _scanService.StartScanAsync();
         return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task TargetedScanLibraryAsync()
+    {
+        if (!ScanLibraryEnabled)
+        {
+            return;
+        }
+
+        await _settingsService.InitializeAsync();
+
+        var availableFolders = _settingsService.CurrentSettings.LibraryFolders
+            .Where(x => !string.IsNullOrWhiteSpace(x.Folder))
+            .Select(x => x.Folder.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (availableFolders.Length == 0)
+        {
+            StatusText = "No library folders configured.";
+            return;
+        }
+
+        var selectedFolders = await _dialogService.ShowTargetedScanFolderSelectionDialogAsync(availableFolders);
+        if (selectedFolders is null)
+        {
+            return;
+        }
+
+        if (selectedFolders.Count == 0)
+        {
+            StatusText = "No folders selected for targeted scan.";
+            return;
+        }
+
+        StatusText = $"Starting targeted scan ({selectedFolders.Count} folders)...";
+        _ = _scanService.StartScanAsync(selectedFolders);
     }
 
     [RelayCommand]

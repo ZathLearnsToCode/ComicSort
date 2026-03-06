@@ -11,7 +11,9 @@
             BorderThickness="1"
             CornerRadius="8"
             Padding="8">
-        <Grid>
+        <Grid ColumnDefinitions="*,Auto"
+              ColumnSpacing="8">
+            <Grid Grid.Column="0">
             <ListBox x:Name="FlatListBox"
                      ItemsSource="{Binding Items}"
                      IsVisible="{Binding IsFlatView}"
@@ -53,8 +55,16 @@
                                     Spacing="4">
                             <StackPanel.ContextMenu>
                                 <ContextMenu>
+                                    <MenuItem Header="Info"
+                                              Command="{Binding #Root.DataContext.ShowInfoCommand}"
+                                              CommandParameter="{Binding}" />
+                                    <Separator/>
                                     <MenuItem Header="Convert to CBZ"
                                               Command="{Binding #Root.DataContext.ConvertToCbzCommand}"
+                                              CommandParameter="{Binding}" />
+                                    <Separator/>
+                                    <MenuItem Header="Delete"
+                                              Command="{Binding #Root.DataContext.DeleteFromLibraryCommand}"
                                               CommandParameter="{Binding}" />
                                 </ContextMenu>
                             </StackPanel.ContextMenu>
@@ -143,8 +153,16 @@
                                                         Spacing="4">
                                                 <StackPanel.ContextMenu>
                                                     <ContextMenu>
+                                                        <MenuItem Header="Info"
+                                                                  Command="{Binding #Root.DataContext.ShowInfoCommand}"
+                                                                  CommandParameter="{Binding}" />
+                                                        <Separator/>
                                                         <MenuItem Header="Convert to CBZ"
                                                                   Command="{Binding #Root.DataContext.ConvertToCbzCommand}"
+                                                                  CommandParameter="{Binding}" />
+                                                        <Separator/>
+                                                        <MenuItem Header="Delete"
+                                                                  Command="{Binding #Root.DataContext.DeleteFromLibraryCommand}"
                                                                   CommandParameter="{Binding}" />
                                                     </ContextMenu>
                                                 </StackPanel.ContextMenu>
@@ -182,6 +200,117 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+            </Grid>
+
+            <Border Grid.Column="1"
+                    Width="360"
+                    IsVisible="{Binding IsInfoPanelOpen}"
+                    Background="{DynamicResource Theme.PanelBrush}"
+                    BorderBrush="{DynamicResource Theme.BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="10">
+                <Grid RowDefinitions="Auto,*"
+                      RowSpacing="10">
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="6">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding InfoPanel.DisplayTitle}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
+                            <TextBlock Text="{Binding InfoPanel.MetadataSource}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="X"
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Command="{Binding CloseInfoPanelCommand}" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="10">
+                            <Border Height="190"
+                                    CornerRadius="4"
+                                    BorderThickness="1"
+                                    BorderBrush="{DynamicResource Theme.BorderBrush}"
+                                    Background="{DynamicResource Theme.SurfaceBrush}">
+                                <Image Stretch="Uniform"
+                                       Source="{Binding InfoPanel.CoverImage}" />
+                            </Border>
+
+                            <TextBlock Text="Loading metadata..."
+                                       IsVisible="{Binding IsInfoLoading}"
+                                       FontStyle="Italic"
+                                       Foreground="{DynamicResource Theme.SecondaryTextBrush}" />
+
+                            <TextBlock Text="{Binding InfoError}"
+                                       IsVisible="{Binding HasInfoError}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource Theme.AccentBrush}" />
+
+                            <Grid IsVisible="{Binding !IsInfoLoading}"
+                                  ColumnDefinitions="Auto,*"
+                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                                  ColumnSpacing="8"
+                                  RowSpacing="4">
+                                <TextBlock Text="Series:" Grid.Row="0" />
+                                <TextBox Text="{Binding InfoPanel.Series, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" />
+                                <TextBlock Text="Title:" Grid.Row="1" />
+                                <TextBox Text="{Binding InfoPanel.Title, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" />
+                                <TextBlock Text="Issue:" Grid.Row="2" />
+                                <TextBox Text="{Binding InfoPanel.IssueNumber, Mode=TwoWay}" Grid.Row="2" Grid.Column="1" />
+                                <TextBlock Text="Volume:" Grid.Row="3" />
+                                <TextBox Text="{Binding InfoPanel.Volume, Mode=TwoWay}" Grid.Row="3" Grid.Column="1" />
+                                <TextBlock Text="Year:" Grid.Row="4" />
+                                <TextBox Text="{Binding InfoPanel.Year, Mode=TwoWay}" Grid.Row="4" Grid.Column="1" />
+                                <TextBlock Text="Publisher:" Grid.Row="5" />
+                                <TextBox Text="{Binding InfoPanel.Publisher, Mode=TwoWay}" Grid.Row="5" Grid.Column="1" />
+                                <TextBlock Text="Writer:" Grid.Row="6" />
+                                <TextBox Text="{Binding InfoPanel.Writer, Mode=TwoWay}" Grid.Row="6" Grid.Column="1" />
+                                <TextBlock Text="Penciller:" Grid.Row="7" />
+                                <TextBox Text="{Binding InfoPanel.Penciller, Mode=TwoWay}" Grid.Row="7" Grid.Column="1" />
+                                <TextBlock Text="Inker:" Grid.Row="8" />
+                                <TextBox Text="{Binding InfoPanel.Inker, Mode=TwoWay}" Grid.Row="8" Grid.Column="1" />
+                                <TextBlock Text="Colorist:" Grid.Row="9" />
+                                <TextBox Text="{Binding InfoPanel.Colorist, Mode=TwoWay}" Grid.Row="9" Grid.Column="1" />
+                                <TextBlock Text="Pages:" Grid.Row="10" />
+                                <TextBox Text="{Binding InfoPanel.PageCount, Mode=TwoWay}" Grid.Row="10" Grid.Column="1" />
+                                <TextBlock Text="Type:" Grid.Row="11" />
+                                <TextBox Text="{Binding InfoPanel.FileType, Mode=TwoWay}" Grid.Row="11" Grid.Column="1" />
+                                <TextBlock Text="Added:" Grid.Row="12" />
+                                <TextBox Text="{Binding InfoPanel.LastScanned, Mode=TwoWay}" Grid.Row="12" Grid.Column="1" />
+                                <TextBlock Text="Where:" Grid.Row="13" VerticalAlignment="Top" />
+                                <TextBox Text="{Binding InfoPanel.FilePath, Mode=TwoWay}" Grid.Row="13" Grid.Column="1" TextWrapping="Wrap" />
+                            </Grid>
+
+                            <TextBlock Text="Summary"
+                                       FontWeight="SemiBold"
+                                       IsVisible="{Binding !IsInfoLoading}" />
+                            <Border IsVisible="{Binding !IsInfoLoading}"
+                                    BorderBrush="{DynamicResource Theme.BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Background="{DynamicResource Theme.SurfaceBrush}"
+                                    Padding="8">
+                                <TextBox Text="{Binding InfoPanel.Summary, Mode=TwoWay}"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         MinHeight="84"
+                                         VerticalContentAlignment="Top"
+                                         Foreground="{DynamicResource Theme.PrimaryTextBrush}" />
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </UserControl>
